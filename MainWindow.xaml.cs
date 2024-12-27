@@ -1,7 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using Microsoft.Win32;
 using System;
-using System.Linq;        // Needed for .Where() and .ToList()
+using System.Linq;
 using System.Windows;
 
 namespace SmoothVideoPlayer
@@ -11,8 +11,8 @@ namespace SmoothVideoPlayer
         private LibVLC _libVLC;
         private MediaPlayer _mediaPlayer;
 
-        // New list to keep track of audio track info
-        private MediaTrack[] _audioTracks = Array.Empty<MediaTrack>();
+        // Keep a collection of 'MediaTrackView' to display proper names in ComboBox
+        private MediaTrackView[] _audioTrackViews = Array.Empty<MediaTrackView>();
 
         public MainWindow()
         {
@@ -22,7 +22,6 @@ namespace SmoothVideoPlayer
             Core.Initialize();
 
             // Recommended LibVLC options for smoother pause/unpause
-            // Lower caching from 3000ms to ~300ms for local playback
             var libVlcOptions = new[]
             {
                 "--file-caching=300",
@@ -34,7 +33,6 @@ namespace SmoothVideoPlayer
             };
 
             _libVLC = new LibVLC(libVlcOptions);
-
             _mediaPlayer = new MediaPlayer(_libVLC)
             {
                 EnableHardwareDecoding = true
@@ -43,7 +41,7 @@ namespace SmoothVideoPlayer
             videoView.MediaPlayer = _mediaPlayer;
         }
 
-        // Modified to be 'async void' because we parse the media asynchronously
+        // Note: 'async void' to allow parsing (await)
         private async void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog
@@ -58,24 +56,24 @@ namespace SmoothVideoPlayer
                 // Create new media with selected file
                 var media = new Media(_libVLC, new Uri(dlg.FileName));
 
-                // IMPORTANT: Parse the media so we can read track data
+                // Parse to read track info
                 await media.Parse(MediaParseOptions.ParseLocal);
 
-                // Extract audio tracks
+                // Retrieve audio tracks
                 var tracks = media.Tracks
                     .Where(t => t.TrackType == TrackType.Audio)
                     .ToArray();
 
-                // Keep them in a local field if needed
-                _audioTracks = tracks;
+                // Convert each MediaTrack to a MediaTrackView for display
+                _audioTrackViews = tracks
+                    .Select(t => new MediaTrackView(t))
+                    .ToArray();
 
-                // Populate the ComboBox with audio track info
-                AudioTracksComboBox.ItemsSource = tracks;
-                if (tracks.Any())
-                {
-                    // Optionally select the first track by default
+                // Bind to ComboBox
+                AudioTracksComboBox.ItemsSource = _audioTrackViews;
+
+                if (_audioTrackViews.Any())
                     AudioTracksComboBox.SelectedIndex = 0;
-                }
 
                 // Assign and play
                 _mediaPlayer.Media = media;
@@ -104,14 +102,13 @@ namespace SmoothVideoPlayer
             _mediaPlayer?.Stop();
         }
 
-        // New event handler to switch audio tracks
+        // When user changes audio track selection
         private void AudioTracksComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            // If a track is selected
-            if (AudioTracksComboBox.SelectedItem is MediaTrack selectedTrack)
+            if (AudioTracksComboBox.SelectedItem is MediaTrackView selectedTrackView)
             {
-                // LibVLC uses track.Id for switching
-                _mediaPlayer.SetAudioTrack(selectedTrack.Id);
+                // Switch audio using track.Id
+                _mediaPlayer.SetAudioTrack(selectedTrackView.Track.Id);
             }
         }
 
@@ -120,6 +117,27 @@ namespace SmoothVideoPlayer
             _mediaPlayer?.Dispose();
             _libVLC?.Dispose();
             base.OnClosed(e);
+        }
+    }
+
+    // Helper class to display friendly names for each audio track
+    public class MediaTrackView
+    {
+        public MediaTrack Track { get; }
+        public string DisplayName { get; }
+
+        public MediaTrackView(MediaTrack track)
+        {
+            Track = track;
+
+            // Show description if available,
+            // else show language if available,
+            // else fallback to "Track {ID}"
+            DisplayName = !string.IsNullOrEmpty(track.Description)
+                ? track.Description
+                : !string.IsNullOrEmpty(track.Language)
+                    ? track.Language
+                    : $"Track {track.Id}";
         }
     }
 }
