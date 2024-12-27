@@ -54,8 +54,10 @@ namespace SmoothVideoPlayer
 
                 var media = new Media(_libVLC, new Uri(dlg.FileName));
 
+                // Parse the media so we can retrieve track information
                 await media.Parse(MediaParseOptions.ParseLocal);
 
+                // Grab audio tracks
                 var tracks = media.Tracks
                     .Where(t => t.TrackType == TrackType.Audio)
                     .ToArray();
@@ -69,8 +71,23 @@ namespace SmoothVideoPlayer
                 if (_audioTrackViews.Any())
                     AudioTracksComboBox.SelectedIndex = 0;
 
+                // Assign the parsed media to the player and start playing
                 _mediaPlayer.Media = media;
                 _mediaPlayer.Play();
+
+                // ------------------------------------------
+                // NEW: Retrieve subtitle tracks and list them
+                // ------------------------------------------
+                var subtitles = _mediaPlayer.SpuDescription;
+                if (subtitles != null && subtitles.Any())
+                {
+                    SubtitlesComboBox.ItemsSource = subtitles;
+                    SubtitlesComboBox.SelectedIndex = 0;
+                }
+                else
+                {
+                    SubtitlesComboBox.ItemsSource = null;
+                }
             }
         }
 
