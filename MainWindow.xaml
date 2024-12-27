@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
         Title="Smooth Video Player"
-        Height="450" Width="800">
+        Height="500" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -20,13 +21,25 @@
             <Button Content="Play"    Width="75" Margin="5" Click="PlayButton_Click"/>
             <Button Content="Pause"   Width="75" Margin="5" Click="PauseButton_Click"/>
             <Button Content="Stop"    Width="75" Margin="5" Click="StopButton_Click"/>
-
-            <!-- ComboBox now uses a custom "DisplayName" property -->
             <ComboBox x:Name="AudioTracksComboBox"
                       Width="150"
                       Margin="5"
                       DisplayMemberPath="DisplayName"
                       SelectionChanged="AudioTracksComboBox_SelectionChanged"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,5,0,5">
+            <TextBlock x:Name="CurrentTimeTextBlock" 
+                       Text="00:00:00" 
+                       Margin="5" />
+            <TextBlock Text="/" 
+                       Margin="5" />
+            <TextBlock x:Name="TotalTimeTextBlock" 
+                       Text="00:00:00" 
+                       Margin="5" />
         </StackPanel>
     </Grid>
 </Window>

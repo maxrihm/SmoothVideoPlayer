@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace SmoothVideoPlayer
 {
@@ -11,17 +12,16 @@ namespace SmoothVideoPlayer
         private LibVLC _libVLC;
         private MediaPlayer _mediaPlayer;
 
-        // Keep a collection of 'MediaTrackView' to display proper names in ComboBox
+        private DispatcherTimer _timer;
+
         private MediaTrackView[] _audioTrackViews = Array.Empty<MediaTrackView>();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Initialize LibVLC once
             Core.Initialize();
 
-            // Recommended LibVLC options for smoother pause/unpause
             var libVlcOptions = new[]
             {
                 "--file-caching=300",
@@ -39,9 +39,14 @@ namespace SmoothVideoPlayer
             };
 
             videoView.MediaPlayer = _mediaPlayer;
+
+            _timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _timer.Tick += UpdateTime;
         }
 
-        // Note: 'async void' to allow parsing (await)
         private async void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog
@@ -53,31 +58,27 @@ namespace SmoothVideoPlayer
             {
                 _mediaPlayer.Stop();
 
-                // Create new media with selected file
                 var media = new Media(_libVLC, new Uri(dlg.FileName));
 
-                // Parse to read track info
                 await media.Parse(MediaParseOptions.ParseLocal);
 
-                // Retrieve audio tracks
                 var tracks = media.Tracks
                     .Where(t => t.TrackType == TrackType.Audio)
                     .ToArray();
 
-                // Convert each MediaTrack to a MediaTrackView for display
                 _audioTrackViews = tracks
                     .Select(t => new MediaTrackView(t))
                     .ToArray();
 
-                // Bind to ComboBox
                 AudioTracksComboBox.ItemsSource = _audioTrackViews;
 
                 if (_audioTrackViews.Any())
                     AudioTracksComboBox.SelectedIndex = 0;
 
-                // Assign and play
                 _mediaPlayer.Media = media;
                 _mediaPlayer.Play();
+
+                _timer.Start();
             }
         }
 
@@ -86,6 +87,7 @@ namespace SmoothVideoPlayer
             if (_mediaPlayer != null && !_mediaPlayer.IsPlaying)
             {
                 _mediaPlayer.Play();
+                _timer.Start();
             }
         }
 
@@ -94,21 +96,42 @@ namespace SmoothVideoPlayer
             if (_mediaPlayer != null)
             {
                 _mediaPlayer.Pause();
+
+                // Keep the timer running to update the time display even when paused
             }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            _mediaPlayer?.Stop();
+            if (_mediaPlayer != null)
+            {
+                _mediaPlayer.Stop();
+                _timer.Stop(); // Stop the timer completely only when stopping the playback.
+
+                // Reset time displays to zero
+                CurrentTimeTextBlock.Text = "00:00:00";
+                TotalTimeTextBlock.Text = "00:00:00";
+            }
         }
 
-        // When user changes audio track selection
         private void AudioTracksComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (AudioTracksComboBox.SelectedItem is MediaTrackView selectedTrackView)
             {
-                // Switch audio using track.Id
                 _mediaPlayer.SetAudioTrack(selectedTrackView.Track.Id);
+            }
+        }
+
+        private void UpdateTime(object sender, EventArgs e)
+        {
+            if (_mediaPlayer != null)
+            {
+                // Always update the displayed time, even if the media player is paused
+                var currentTime = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+                var totalTime = TimeSpan.FromMilliseconds(_mediaPlayer.Length);
+
+                CurrentTimeTextBlock.Text = currentTime.ToString(@"hh\:mm\:ss");
+                TotalTimeTextBlock.Text = totalTime.ToString(@"hh\:mm\:ss");
             }
         }
 
@@ -116,11 +139,11 @@ namespace SmoothVideoPlayer
         {
             _mediaPlayer?.Dispose();
             _libVLC?.Dispose();
+            _timer?.Stop();
             base.OnClosed(e);
         }
     }
 
-    // Helper class to display friendly names for each audio track
     public class MediaTrackView
     {
         public MediaTrack Track { get; }
@@ -130,9 +153,6 @@ namespace SmoothVideoPlayer
         {
             Track = track;
 
-            // Show description if available,
-            // else show language if available,
-            // else fallback to "Track {ID}"
             DisplayName = !string.IsNullOrEmpty(track.Description)
                 ? track.Description
                 : !string.IsNullOrEmpty(track.Language)
