@@ -3,7 +3,6 @@ using Microsoft.Win32;
 using System;
 using System.Linq;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace SmoothVideoPlayer
 {
@@ -11,8 +10,6 @@ namespace SmoothVideoPlayer
     {
         private LibVLC _libVLC;
         private MediaPlayer _mediaPlayer;
-
-        private DispatcherTimer _timer;
 
         private MediaTrackView[] _audioTrackViews = Array.Empty<MediaTrackView>();
 
@@ -40,11 +37,8 @@ namespace SmoothVideoPlayer
 
             videoView.MediaPlayer = _mediaPlayer;
 
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += UpdateTime;
+            // Subscribe to LibVLC's TimeChanged event
+            _mediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
         }
 
         private async void OpenButton_Click(object sender, RoutedEventArgs e)
@@ -77,8 +71,6 @@ namespace SmoothVideoPlayer
 
                 _mediaPlayer.Media = media;
                 _mediaPlayer.Play();
-
-                _timer.Start();
             }
         }
 
@@ -87,7 +79,6 @@ namespace SmoothVideoPlayer
             if (_mediaPlayer != null && !_mediaPlayer.IsPlaying)
             {
                 _mediaPlayer.Play();
-                _timer.Start();
             }
         }
 
@@ -96,8 +87,6 @@ namespace SmoothVideoPlayer
             if (_mediaPlayer != null)
             {
                 _mediaPlayer.Pause();
-
-                // Keep the timer running to update the time display even when paused
             }
         }
 
@@ -106,7 +95,6 @@ namespace SmoothVideoPlayer
             if (_mediaPlayer != null)
             {
                 _mediaPlayer.Stop();
-                _timer.Stop(); // Stop the timer completely only when stopping the playback.
 
                 // Reset time displays to zero
                 CurrentTimeTextBlock.Text = "00:00:00";
@@ -122,24 +110,23 @@ namespace SmoothVideoPlayer
             }
         }
 
-        private void UpdateTime(object sender, EventArgs e)
+        private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
-            if (_mediaPlayer != null)
+            // Update time display using Dispatcher to interact with the UI thread
+            Dispatcher.Invoke(() =>
             {
-                // Always update the displayed time, even if the media player is paused
-                var currentTime = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+                var currentTime = TimeSpan.FromMilliseconds(e.Time);
                 var totalTime = TimeSpan.FromMilliseconds(_mediaPlayer.Length);
 
                 CurrentTimeTextBlock.Text = currentTime.ToString(@"hh\:mm\:ss");
                 TotalTimeTextBlock.Text = totalTime.ToString(@"hh\:mm\:ss");
-            }
+            });
         }
 
         protected override void OnClosed(EventArgs e)
         {
             _mediaPlayer?.Dispose();
             _libVLC?.Dispose();
-            _timer?.Stop();
             base.OnClosed(e);
         }
     }
