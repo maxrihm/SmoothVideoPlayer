@@ -1,5 +1,5 @@
 ﻿using LibVLCSharp.Shared;
-using Microsoft.Win32;   // for OpenFileDialog
+using Microsoft.Win32;
 using System;
 using System.Windows;
 
@@ -14,29 +14,39 @@ namespace SmoothVideoPlayer
         {
             InitializeComponent();
 
-            // LibVLC needs to be initialized once
+            // Initialize LibVLC once
             Core.Initialize();
 
-            // LibVLC recommended options
+            // Recommended LibVLC options for smoother pause/unpause
+            // Lower caching from 3000ms to ~300ms for local playback
             var libVlcOptions = new[]
             {
-                "--file-caching=3000",
-                "--network-caching=3000",
-                "--clock-jitter=0",
+                "--file-caching=300",
+                "--network-caching=300",
+                "--live-caching=300",
+
+                // You can comment out advanced options if they're causing side effects:
+                // "--clock-jitter=0",
+                // Keep hardware decoding, but you can test disabling it if needed:
                 "--avcodec-hw=any",
+
                 "--no-stats",
-                "--no-plugins-cache",
-                "--no-drop-late-frames",
-                "--no-skip-frames"
+                "--no-plugins-cache"
+
+                // Remove or comment out the lines below that prevent dropping frames:
+                // "--no-drop-late-frames",
+                // "--no-skip-frames"
             };
 
             _libVLC = new LibVLC(libVlcOptions);
 
             _mediaPlayer = new MediaPlayer(_libVLC)
             {
+                // You can disable hardware decoding to test if it helps:
                 EnableHardwareDecoding = true
             };
 
+            // Assign MediaPlayer to our VideoView
             videoView.MediaPlayer = _mediaPlayer;
         }
 
@@ -49,8 +59,13 @@ namespace SmoothVideoPlayer
 
             if (dlg.ShowDialog() == true)
             {
+                // Stop any currently playing media
                 _mediaPlayer.Stop();
+
+                // Create new media with selected file
                 var media = new Media(_libVLC, new Uri(dlg.FileName));
+
+                // Assign and play
                 _mediaPlayer.Media = media;
                 _mediaPlayer.Play();
             }
@@ -66,8 +81,9 @@ namespace SmoothVideoPlayer
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_mediaPlayer != null && _mediaPlayer.IsPlaying)
+            if (_mediaPlayer != null)
             {
+                // If playing, pause. If already paused, unpause.
                 _mediaPlayer.Pause();
             }
         }
