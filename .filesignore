@@ -1,0 +1,5 @@
+.gitattributes
+.gitignore
+AssemblyInfo.cs
+SmoothVideoPlayer.sln
+.filesignore
