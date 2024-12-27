@@ -10,14 +10,27 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- VideoView remains unchanged -->
         <vlc:VideoView x:Name="videoView" Grid.Row="0" />
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" 
+        <!-- BEGIN: Changed/Added section -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
                     HorizontalAlignment="Center" Margin="0,5,0,5">
             <Button Content="Open..." Width="75" Margin="5" Click="OpenButton_Click"/>
             <Button Content="Play"    Width="75" Margin="5" Click="PlayButton_Click"/>
             <Button Content="Pause"   Width="75" Margin="5" Click="PauseButton_Click"/>
             <Button Content="Stop"    Width="75" Margin="5" Click="StopButton_Click"/>
+
+            <!-- New ComboBox to list audio tracks -->
+            <ComboBox x:Name="AudioTracksComboBox"
+                      Width="150"
+                      Margin="5"
+                      SelectionChanged="AudioTracksComboBox_SelectionChanged"
+                      DisplayMemberPath="Description">
+                <!-- DisplayMemberPath can be 'Description' or 'Language' 
+                     depending on which property you want to show. -->
+            </ComboBox>
         </StackPanel>
+        <!-- END: Changed/Added section -->
     </Grid>
 </Window>

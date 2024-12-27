@@ -1,6 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using Microsoft.Win32;
 using System;
+using System.Linq;        // Needed for .Where() and .ToList()
 using System.Windows;
 
 namespace SmoothVideoPlayer
@@ -9,6 +10,9 @@ namespace SmoothVideoPlayer
     {
         private LibVLC _libVLC;
         private MediaPlayer _mediaPlayer;
+
+        // New list to keep track of audio track info
+        private MediaTrack[] _audioTracks = Array.Empty<MediaTrack>();
 
         public MainWindow()
         {
@@ -24,33 +28,23 @@ namespace SmoothVideoPlayer
                 "--file-caching=300",
                 "--network-caching=300",
                 "--live-caching=300",
-
-                // You can comment out advanced options if they're causing side effects:
-                // "--clock-jitter=0",
-                // Keep hardware decoding, but you can test disabling it if needed:
                 "--avcodec-hw=any",
-
                 "--no-stats",
                 "--no-plugins-cache"
-
-                // Remove or comment out the lines below that prevent dropping frames:
-                // "--no-drop-late-frames",
-                // "--no-skip-frames"
             };
 
             _libVLC = new LibVLC(libVlcOptions);
 
             _mediaPlayer = new MediaPlayer(_libVLC)
             {
-                // You can disable hardware decoding to test if it helps:
                 EnableHardwareDecoding = true
             };
 
-            // Assign MediaPlayer to our VideoView
             videoView.MediaPlayer = _mediaPlayer;
         }
 
-        private void OpenButton_Click(object sender, RoutedEventArgs e)
+        // Modified to be 'async void' because we parse the media asynchronously
+        private async void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog
             {
@@ -59,11 +53,29 @@ namespace SmoothVideoPlayer
 
             if (dlg.ShowDialog() == true)
             {
-                // Stop any currently playing media
                 _mediaPlayer.Stop();
 
                 // Create new media with selected file
                 var media = new Media(_libVLC, new Uri(dlg.FileName));
+
+                // IMPORTANT: Parse the media so we can read track data
+                await media.Parse(MediaParseOptions.ParseLocal);
+
+                // Extract audio tracks
+                var tracks = media.Tracks
+                    .Where(t => t.TrackType == TrackType.Audio)
+                    .ToArray();
+
+                // Keep them in a local field if needed
+                _audioTracks = tracks;
+
+                // Populate the ComboBox with audio track info
+                AudioTracksComboBox.ItemsSource = tracks;
+                if (tracks.Any())
+                {
+                    // Optionally select the first track by default
+                    AudioTracksComboBox.SelectedIndex = 0;
+                }
 
                 // Assign and play
                 _mediaPlayer.Media = media;
@@ -83,7 +95,6 @@ namespace SmoothVideoPlayer
         {
             if (_mediaPlayer != null)
             {
-                // If playing, pause. If already paused, unpause.
                 _mediaPlayer.Pause();
             }
         }
@@ -91,6 +102,17 @@ namespace SmoothVideoPlayer
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             _mediaPlayer?.Stop();
+        }
+
+        // New event handler to switch audio tracks
+        private void AudioTracksComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            // If a track is selected
+            if (AudioTracksComboBox.SelectedItem is MediaTrack selectedTrack)
+            {
+                // LibVLC uses track.Id for switching
+                _mediaPlayer.SetAudioTrack(selectedTrack.Id);
+            }
         }
 
         protected override void OnClosed(EventArgs e)
