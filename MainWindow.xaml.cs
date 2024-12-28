@@ -19,6 +19,12 @@ namespace SmoothVideoPlayer
 
         private MediaTrackView[] _audioTrackViews = Array.Empty<MediaTrackView>();
 
+        // --------------------------------------------------------------------
+        // NEW FIELDS for manual subtitle display
+        // --------------------------------------------------------------------
+        private SubtitleTrackView _selectedSubtitleTrack = null;
+        private int _currentSubtitleIndex = 0;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -103,10 +109,6 @@ namespace SmoothVideoPlayer
                 for (int i = 0; i < subtitleTracks.Length; i++)
                 {
                     var track = subtitleTracks[i];
-                    // We'll attempt to extract track index = i
-                    // If your video has more complicated track indexing,
-                    // adapt as needed. Typically it's 0,1,2,... for subtitles.
-
                     try
                     {
                         string extractedPath = await ExtractSubtitlesForTrackAsync(dlg.FileName, i);
@@ -183,6 +185,9 @@ namespace SmoothVideoPlayer
                 // Reset time displays to zero
                 CurrentTimeTextBlock.Text = "00:00:00";
                 TotalTimeTextBlock.Text = "00:00:00";
+
+                // Also clear subtitle text
+                SubtitleTextBox.Text = "";
             }
         }
 
@@ -195,20 +200,31 @@ namespace SmoothVideoPlayer
         }
 
         /// <summary>
-        /// Subtitles combo selection changed
-        /// Here you can choose which subtitles to display or handle differently.
-        /// Right now, it's just a placeholder example.
+        /// Subtitles combo selection changed.
+        /// Set the currently selected track and reset the search index.
         /// </summary>
         private void SubtitlesComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (SubtitlesComboBox.SelectedItem is SubtitleTrackView selectedSub)
             {
-                // Example: You might want to show the parsed lines in a debug
-                // window or overlay them manually, etc.
+                _selectedSubtitleTrack = selectedSub;
+                _currentSubtitleIndex = 0; // reset to beginning
                 Debug.WriteLine($"Selected {selectedSub.Name} with {selectedSub.ParsedSubtitles.Count} subtitle blocks.");
             }
+            else
+            {
+                _selectedSubtitleTrack = null;
+                _currentSubtitleIndex = 0;
+            }
+
+            // Clear whatever might have been showing
+            SubtitleTextBox.Text = "";
         }
 
+        /// <summary>
+        /// Whenever the video time changes, update the time display and
+        /// also find+display the appropriate subtitle text (if any).
+        /// </summary>
         private void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
             // Update time display on the UI thread
@@ -219,7 +235,57 @@ namespace SmoothVideoPlayer
 
                 CurrentTimeTextBlock.Text = currentTime.ToString(@"hh\:mm\:ss");
                 TotalTimeTextBlock.Text = totalTime.ToString(@"hh\:mm\:ss");
+
+                // --------------------------------------------------------
+                // Check if there's a selected subtitle track
+                // --------------------------------------------------------
+                if (_selectedSubtitleTrack != null &&
+                    _selectedSubtitleTrack.ParsedSubtitles != null &&
+                    _selectedSubtitleTrack.ParsedSubtitles.Count > 0)
+                {
+                    UpdateSubtitleTextForTime(currentTime);
+                }
+                else
+                {
+                    // No subtitle track selected or empty
+                    SubtitleTextBox.Text = "";
+                }
             });
+        }
+
+        /// <summary>
+        /// Finds the correct subtitle item for the given currentTime,
+        /// using an incremental index approach for smoother playback.
+        /// </summary>
+        private void UpdateSubtitleTextForTime(TimeSpan currentTime)
+        {
+            var subs = _selectedSubtitleTrack.ParsedSubtitles;
+            // Step backwards if we overshoot:
+            while (_currentSubtitleIndex > 0 && 
+                   currentTime < subs[_currentSubtitleIndex].StartTime)
+            {
+                _currentSubtitleIndex--;
+            }
+
+            // Step forwards if we've passed the end of the current block:
+            while (_currentSubtitleIndex < subs.Count - 1 &&
+                   currentTime > subs[_currentSubtitleIndex].EndTime)
+            {
+                _currentSubtitleIndex++;
+            }
+
+            // Now check if the current index is the correct block
+            var item = subs[_currentSubtitleIndex];
+            if (currentTime >= item.StartTime && currentTime < item.EndTime)
+            {
+                // We are "inside" this subtitle block
+                SubtitleTextBox.Text = string.Join(Environment.NewLine, item.Lines);
+            }
+            else
+            {
+                // We are before the start or after the end => no subtitles
+                SubtitleTextBox.Text = "";
+            }
         }
 
         protected override void OnClosed(EventArgs e)
@@ -232,12 +298,6 @@ namespace SmoothVideoPlayer
         // ---------------------------------------------------------------------
         // EXTRACT AND PARSE SUBTITLES
         // ---------------------------------------------------------------------
-
-        /// <summary>
-        /// Extract a specific subtitle track (by index) from the input file
-        /// using FFmpeg, to an .srt file. Runs on a background thread
-        /// so the UI won't freeze.
-        /// </summary>
         private async Task<string> ExtractSubtitlesForTrackAsync(string inputPath, int trackIndex)
         {
             var outputFolder = Path.GetDirectoryName(inputPath) ?? Environment.CurrentDirectory;
@@ -246,8 +306,7 @@ namespace SmoothVideoPlayer
             // Adjust if FFmpeg is not on your PATH
             const string ffmpegExecutable = "ffmpeg";
 
-            // NOTE: We map the specific track index  (0:s:<trackIndex>)
-            // E.g., if trackIndex=1, then we do -map 0:s:1
+            // NOTE: We map the specific track index (0:s:<trackIndex>)
             var arguments = $"-i \"{inputPath}\" -map 0:s:{trackIndex} -c:s srt -y \"{outputSrtPath}\"";
 
             var processStartInfo = new ProcessStartInfo
@@ -264,7 +323,6 @@ namespace SmoothVideoPlayer
             {
                 using (var process = new Process { StartInfo = processStartInfo })
                 {
-                    // Read standard output/error
                     process.OutputDataReceived += (sender, e) =>
                     {
                         if (!string.IsNullOrEmpty(e.Data))
@@ -286,10 +344,6 @@ namespace SmoothVideoPlayer
             return File.Exists(outputSrtPath) ? outputSrtPath : null;
         }
 
-        /// <summary>
-        /// Parse an .srt file using SubtitlesParser and return
-        /// a list of ParsedSubtitleItem.
-        /// </summary>
         private List<ParsedSubtitleItem> ParseSubtitles(string srtPath)
         {
             var result = new List<ParsedSubtitleItem>();
@@ -308,7 +362,6 @@ namespace SmoothVideoPlayer
                     });
                 }
             }
-
             return result;
         }
     }
@@ -316,10 +369,6 @@ namespace SmoothVideoPlayer
     // ---------------------------------------------------------------------
     // VIEW MODELS
     // ---------------------------------------------------------------------
-
-    /// <summary>
-    /// Holds the audio track info for the audio ComboBox.
-    /// </summary>
     public class MediaTrackView
     {
         public MediaTrack Track { get; }
@@ -336,19 +385,13 @@ namespace SmoothVideoPlayer
         }
     }
 
-    /// <summary>
-    /// Represents one extracted subtitle track in the SubtitlesComboBox.
-    /// </summary>
     public class SubtitleTrackView
     {
-        public string Name { get; set; } = string.Empty;       // e.g. "Subtitle Track 0 (eng)"
-        public string FilePath { get; set; } = string.Empty;   // path to the .srt file
+        public string Name { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
         public List<ParsedSubtitleItem> ParsedSubtitles { get; set; } = new List<ParsedSubtitleItem>();
     }
 
-    /// <summary>
-    /// Represents one block of parsed subtitles (start time, end time, lines).
-    /// </summary>
     public class ParsedSubtitleItem
     {
         public TimeSpan StartTime { get; set; }

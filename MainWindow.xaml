@@ -5,10 +5,12 @@
         Title="Smooth Video Player"
         Height="500" Width="800">
     <Grid>
+        <!-- Add a row for the subtitles -->
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition />               <!-- Video row -->
+            <RowDefinition Height="Auto"/>  <!-- Player control row -->
+            <RowDefinition Height="Auto"/>  <!-- Time display row -->
+            <RowDefinition Height="Auto"/>  <!-- Subtitle text row -->
         </Grid.RowDefinitions>
 
         <!-- The video display area -->
@@ -43,11 +45,12 @@
                       DisplayMemberPath="DisplayName"
                       SelectionChanged="AudioTracksComboBox_SelectionChanged"/>
 
-            <!-- Subtitle track selection (new) -->
+            <!-- Subtitle track selection -->
             <ComboBox x:Name="SubtitlesComboBox"
                       Width="150"
                       Margin="5"
-                      DisplayMemberPath="Name" />
+                      DisplayMemberPath="Name"
+                      SelectionChanged="SubtitlesComboBox_SelectionChanged" />
         </StackPanel>
 
         <!-- Time displays -->
@@ -64,5 +67,16 @@
                        Text="00:00:00" 
                        Margin="5" />
         </StackPanel>
+
+        <!-- Display the "current" subtitle as selectable text -->
+        <TextBox x:Name="SubtitleTextBox"
+                 Grid.Row="3"
+                 Margin="10,5,10,5"
+                 IsReadOnly="True"
+                 IsReadOnlyCaretVisible="False"
+                 TextWrapping="Wrap"
+                 BorderThickness="1"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Top" />
     </Grid>
 </Window>
