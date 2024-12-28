@@ -15,12 +15,6 @@ namespace SmoothVideoPlayer.Services
 
         public void Initialize()
         {
-            InitializeLibVLC();
-            InitializeMediaPlayer();
-        }
-
-        void InitializeLibVLC()
-        {
             Core.Initialize();
             var options = new[]
             {
@@ -32,10 +26,6 @@ namespace SmoothVideoPlayer.Services
                 "--no-plugins-cache"
             };
             libVLC = new LibVLC(options);
-        }
-
-        void InitializeMediaPlayer()
-        {
             mediaPlayer = new MediaPlayer(libVLC)
             {
                 EnableHardwareDecoding = true
@@ -64,6 +54,7 @@ namespace SmoothVideoPlayer.Services
                 var media = new Media(libVLC, new Uri(filePath));
                 media.AddOption(":no-embedded-video");
                 media.AddOption(":video-on-top");
+                media.AddOption(":fullscreen");
                 media.Parse(MediaParseOptions.ParseNetwork | MediaParseOptions.ParseLocal);
                 while (media.ParsedStatus != MediaParsedStatus.Done)
                 {
@@ -71,6 +62,7 @@ namespace SmoothVideoPlayer.Services
                 }
                 mediaPlayer.Media = media;
                 mediaPlayer.Play();
+                mediaPlayer.Fullscreen = true;
             }
         }
 
@@ -137,4 +129,4 @@ namespace SmoothVideoPlayer.Services
             return TimeSpan.Zero;
         }
     }
-} 
+}

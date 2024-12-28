@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -30,7 +31,7 @@ namespace SmoothVideoPlayer.Views
             }
         }
 
-        protected override void OnClosed(System.EventArgs e)
+        protected override void OnClosed(EventArgs e)
         {
             if (DataContext is MainViewModel)
             {
@@ -45,13 +46,19 @@ namespace SmoothVideoPlayer.Views
 
         void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Space)
+            if (DataContext is MainViewModel vm)
             {
-                if (DataContext is MainViewModel vm)
+                if (e.Key == Key.Space)
                 {
                     vm.TogglePlayPause();
                 }
             }
+        }
+
+        void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            Activate();
         }
     }
 }

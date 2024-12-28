@@ -6,43 +6,52 @@
         xmlns:vm="clr-namespace:SmoothVideoPlayer.ViewModels"
         mc:Ignorable="d"
         Title="Smooth Video Player"
-        Height="500" Width="800"
-        KeyDown="Window_KeyDown">
-    <Grid>
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="#01000000"
+        WindowState="Maximized"
+        KeyDown="Window_KeyDown"
+        MouseDown="Window_MouseDown">
+    <Grid Focusable="True">
+        <Grid.Resources>
+            <DropShadowEffect x:Key="SubtitleOutline" BlurRadius="2" ShadowDepth="0" Color="Black" Opacity="1"/>
+            <Style x:Key="SubtitleTextStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontFamily" Value="Arial"/>
+                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="Effect" Value="{StaticResource SubtitleOutline}"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Bottom"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="MaxWidth" Value="1200"/>
+            </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-            <TextBlock Text="Video is now opened in a native window."
-                       FontSize="16"
-                       HorizontalAlignment="Center" />
-        </StackPanel>
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
-                    Margin="0,5,0,5">
+                    Margin="0,5,0,5"
+                    Background="#80000000">
             <Button Content="Open..."
                     Width="75"
                     Margin="5"
                     Command="{Binding OpenCommand}"
-                    KeyboardNavigation.IsTabStop="False"
                     Focusable="False"/>
             <Button Content="Play/Pause"
                     Width="75"
                     Margin="5"
                     Command="{Binding TogglePlayPauseCommand}"
-                    KeyboardNavigation.IsTabStop="False"
                     Focusable="False"/>
             <Button Content="Stop"
                     Width="75"
                     Margin="5"
                     Command="{Binding StopCommand}"
-                    KeyboardNavigation.IsTabStop="False"
                     Focusable="False"/>
             <ComboBox Width="150"
                       Margin="5"
@@ -50,7 +59,6 @@
                       SelectedItem="{Binding SelectedAudioTrack}"
                       DisplayMemberPath="DisplayName"
                       SelectionChanged="AudioTracksComboBox_SelectionChanged"
-                      KeyboardNavigation.IsTabStop="False"
                       Focusable="False"/>
             <ComboBox Width="150"
                       Margin="5"
@@ -58,25 +66,19 @@
                       SelectedItem="{Binding SelectedSubtitleTrack}"
                       DisplayMemberPath="Name"
                       SelectionChanged="SubtitlesComboBox_SelectionChanged"
-                      KeyboardNavigation.IsTabStop="False"
                       Focusable="False"/>
+            <TextBlock Text="{Binding CurrentTime}"
+                       Margin="10,0,0,0"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="/" Margin="5,0" Foreground="White" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding TotalTime}"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
         </StackPanel>
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="0,5,0,5">
-            <TextBlock Text="{Binding CurrentTime}" Margin="5" />
-            <TextBlock Text="/" Margin="5" />
-            <TextBlock Text="{Binding TotalTime}" Margin="5" />
-        </StackPanel>
-        <TextBox Grid.Row="3"
-                 Margin="10,5,10,5"
-                 IsReadOnly="True"
-                 IsReadOnlyCaretVisible="False"
-                 TextWrapping="Wrap"
-                 BorderThickness="1"
-                 HorizontalAlignment="Stretch"
-                 VerticalAlignment="Top"
-                 Text="{Binding SubtitleText}"/>
+        <TextBlock Style="{StaticResource SubtitleTextStyle}"
+                   Text="{Binding SubtitleText}"
+                   Grid.Row="0"
+                   Margin="0,0,0,120"/>
     </Grid>
-</Window> 
+</Window>
