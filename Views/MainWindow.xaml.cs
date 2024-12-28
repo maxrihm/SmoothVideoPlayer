@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services;
 
@@ -51,6 +52,17 @@ namespace SmoothVideoPlayer.Views
                         videoView.MediaPlayer = null;
                         videoView.MediaPlayer = svc.GetType().GetField("mediaPlayer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(svc) as LibVLCSharp.Shared.MediaPlayer;
                     }
+                }
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+            {
+                if (DataContext is MainViewModel vm)
+                {
+                    vm.TogglePlayPause();
                 }
             }
         }

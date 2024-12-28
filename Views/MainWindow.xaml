@@ -8,7 +8,8 @@
         mc:Ignorable="d"
         Title="Smooth Video Player"
         Height="500" Width="800"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        KeyDown="Window_KeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -24,31 +25,37 @@
             <Button Content="Open..."
                     Width="75"
                     Margin="5"
-                    Command="{Binding OpenCommand}"/>
-            <Button Content="Play"
+                    Command="{Binding OpenCommand}"
+                    KeyboardNavigation.IsTabStop="False"
+                    Focusable="False"/>
+            <Button Content="Play/Pause"
                     Width="75"
                     Margin="5"
-                    Command="{Binding PlayCommand}"/>
-            <Button Content="Pause"
-                    Width="75"
-                    Margin="5"
-                    Command="{Binding PauseCommand}"/>
+                    Command="{Binding TogglePlayPauseCommand}"
+                    KeyboardNavigation.IsTabStop="False"
+                    Focusable="False"/>
             <Button Content="Stop"
                     Width="75"
                     Margin="5"
-                    Command="{Binding StopCommand}"/>
+                    Command="{Binding StopCommand}"
+                    KeyboardNavigation.IsTabStop="False"
+                    Focusable="False"/>
             <ComboBox Width="150"
                       Margin="5"
                       ItemsSource="{Binding AudioTracks}"
                       SelectedItem="{Binding SelectedAudioTrack}"
                       DisplayMemberPath="DisplayName"
-                      SelectionChanged="AudioTracksComboBox_SelectionChanged"/>
+                      SelectionChanged="AudioTracksComboBox_SelectionChanged"
+                      KeyboardNavigation.IsTabStop="False"
+                      Focusable="False"/>
             <ComboBox Width="150"
                       Margin="5"
                       ItemsSource="{Binding SubtitleTracks}"
                       SelectedItem="{Binding SelectedSubtitleTrack}"
                       DisplayMemberPath="Name"
-                      SelectionChanged="SubtitlesComboBox_SelectionChanged"/>
+                      SelectionChanged="SubtitlesComboBox_SelectionChanged"
+                      KeyboardNavigation.IsTabStop="False"
+                      Focusable="False"/>
         </StackPanel>
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"

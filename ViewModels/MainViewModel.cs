@@ -29,8 +29,7 @@ namespace SmoothVideoPlayer.ViewModels
             mediaService.OnTimeChanged += MediaService_OnTimeChanged;
             mediaService.OnStopped += MediaService_OnStopped;
             OpenCommand = new RelayCommand(async _ => await Open());
-            PlayCommand = new RelayCommand(_ => Play());
-            PauseCommand = new RelayCommand(_ => Pause());
+            TogglePlayPauseCommand = new RelayCommand(_ => TogglePlayPause());
             StopCommand = new RelayCommand(_ => Stop());
             AudioTrackChangedCommand = new RelayCommand(_ => AudioTrackChanged());
             SubtitleTrackChangedCommand = new RelayCommand(_ => SubtitleTrackChanged());
@@ -39,8 +38,7 @@ namespace SmoothVideoPlayer.ViewModels
         }
 
         public ICommand OpenCommand { get; }
-        public ICommand PlayCommand { get; }
-        public ICommand PauseCommand { get; }
+        public ICommand TogglePlayPauseCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand AudioTrackChangedCommand { get; }
         public ICommand SubtitleTrackChangedCommand { get; }
@@ -171,14 +169,16 @@ namespace SmoothVideoPlayer.ViewModels
             return extracted;
         }
 
-        void Play()
+        public void TogglePlayPause()
         {
-            mediaService.Play();
-        }
-
-        void Pause()
-        {
-            mediaService.Pause();
+            if (mediaService.IsPlaying())
+            {
+                mediaService.Pause();
+            }
+            else
+            {
+                mediaService.Play();
+            }
         }
 
         void Stop()
