@@ -12,6 +12,7 @@
 		<!-- Ensure LibVLCSharp.WPF is referenced -->
 		<PackageReference Include="LibVLCSharp" Version="3.9.1" />
 		<PackageReference Include="LibVLCSharp.WPF" Version="3.9.1" />
+		<PackageReference Include="SubtitlesParser" Version="1.5.1" />
 		<PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" />
 	</ItemGroup>
 </Project>
