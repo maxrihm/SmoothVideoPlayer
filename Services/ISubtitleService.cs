@@ -7,9 +7,9 @@ namespace SmoothVideoPlayer.Services
 {
     public interface ISubtitleService
     {
+        List<SubtitleTrackView> AllSubtitleTracks { get; }
         Task<List<SubtitleTrackView>> ExtractAndParseSubtitleTracksAsync(string filePath, int totalSubtitleTracks);
-        SubtitleTrackView GetSelectedSubtitleTrack();
-        void SetSelectedSubtitleTrack(SubtitleTrackView track);
-        string GetSubtitleForTime(TimeSpan currentTime);
+        void AddSubtitleTrack(SubtitleTrackView track);
+        string GetSubtitleForTime(TimeSpan currentTime, SubtitleTrackView track);
     }
 }

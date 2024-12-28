@@ -11,8 +11,8 @@ namespace SmoothVideoPlayer.Services
 {
     public class SubtitleService : ISubtitleService
     {
-        SubtitleTrackView selectedSubtitleTrack;
-        int currentSubtitleIndex;
+        Dictionary<SubtitleTrackView, int> trackIndexes = new Dictionary<SubtitleTrackView, int>();
+        public List<SubtitleTrackView> AllSubtitleTracks { get; } = new List<SubtitleTrackView>();
 
         public async Task<List<SubtitleTrackView>> ExtractAndParseSubtitleTracksAsync(string filePath, int totalSubtitleTracks)
         {
@@ -26,12 +26,14 @@ namespace SmoothVideoPlayer.Services
                     {
                         var parsed = ParseSubtitles(extractedPath);
                         var trackName = $"Subtitle Track {i}";
-                        tracks.Add(new SubtitleTrackView
+                        var tv = new SubtitleTrackView
                         {
                             Name = trackName,
                             FilePath = extractedPath,
                             ParsedSubtitles = parsed
-                        });
+                        };
+                        tracks.Add(tv);
+                        AddSubtitleTrack(tv);
                     }
                 }
                 catch
@@ -39,6 +41,42 @@ namespace SmoothVideoPlayer.Services
                 }
             }
             return tracks;
+        }
+
+        public void AddSubtitleTrack(SubtitleTrackView track)
+        {
+            if (!AllSubtitleTracks.Contains(track))
+            {
+                AllSubtitleTracks.Add(track);
+                if (!trackIndexes.ContainsKey(track))
+                {
+                    trackIndexes[track] = 0;
+                }
+            }
+        }
+
+        public string GetSubtitleForTime(TimeSpan currentTime, SubtitleTrackView track)
+        {
+            if (track == null) return string.Empty;
+            if (track.ParsedSubtitles == null || track.ParsedSubtitles.Count == 0) return string.Empty;
+            if (!trackIndexes.ContainsKey(track)) trackIndexes[track] = 0;
+            var currentIndex = trackIndexes[track];
+            var subs = track.ParsedSubtitles;
+            while (currentIndex > 0 && currentTime < subs[currentIndex].StartTime)
+            {
+                currentIndex--;
+            }
+            while (currentIndex < subs.Count - 1 && currentTime > subs[currentIndex].EndTime)
+            {
+                currentIndex++;
+            }
+            trackIndexes[track] = currentIndex;
+            var item = subs[currentIndex];
+            if (currentTime >= item.StartTime && currentTime < item.EndTime)
+            {
+                return string.Join("\n", item.Lines);
+            }
+            return string.Empty;
         }
 
         async Task<string> ExtractSubtitlesForTrackAsync(string inputPath, int trackIndex)
@@ -93,44 +131,6 @@ namespace SmoothVideoPlayer.Services
                 }
             }
             return list;
-        }
-
-        public SubtitleTrackView GetSelectedSubtitleTrack()
-        {
-            return selectedSubtitleTrack;
-        }
-
-        public void SetSelectedSubtitleTrack(SubtitleTrackView track)
-        {
-            selectedSubtitleTrack = track;
-            currentSubtitleIndex = 0;
-        }
-
-        public string GetSubtitleForTime(TimeSpan currentTime)
-        {
-            if (selectedSubtitleTrack == null)
-            {
-                return string.Empty;
-            }
-            var subs = selectedSubtitleTrack.ParsedSubtitles;
-            if (subs == null || subs.Count == 0)
-            {
-                return string.Empty;
-            }
-            while (currentSubtitleIndex > 0 && currentTime < subs[currentSubtitleIndex].StartTime)
-            {
-                currentSubtitleIndex--;
-            }
-            while (currentSubtitleIndex < subs.Count - 1 && currentTime > subs[currentSubtitleIndex].EndTime)
-            {
-                currentSubtitleIndex++;
-            }
-            var item = subs[currentSubtitleIndex];
-            if (currentTime >= item.StartTime && currentTime < item.EndTime)
-            {
-                return string.Join("\n", item.Lines);
-            }
-            return string.Empty;
         }
     }
 } 

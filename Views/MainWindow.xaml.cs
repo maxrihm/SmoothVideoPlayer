@@ -23,11 +23,19 @@ namespace SmoothVideoPlayer.Views
             }
         }
 
-        void SubtitlesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        void FirstSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DataContext is MainViewModel vm && vm.SubtitleTrackChangedCommand.CanExecute(null))
+            if (DataContext is MainViewModel vm && vm.FirstSubtitleTrackChangedCommand.CanExecute(null))
             {
-                vm.SubtitleTrackChangedCommand.Execute(null);
+                vm.FirstSubtitleTrackChangedCommand.Execute(null);
+            }
+        }
+
+        void SecondSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm && vm.SecondSubtitleTrackChangedCommand.CanExecute(null))
+            {
+                vm.SecondSubtitleTrackChangedCommand.Execute(null);
             }
         }
 

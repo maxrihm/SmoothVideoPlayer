@@ -28,6 +28,19 @@
                 <Setter Property="TextWrapping" Value="Wrap"/>
                 <Setter Property="MaxWidth" Value="1200"/>
             </Style>
+            <Style x:Key="SecondarySubtitleTextStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontFamily" Value="Arial"/>
+                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="Effect" Value="{StaticResource SubtitleOutline}"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="MaxWidth" Value="1200"/>
+            </Style>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -38,7 +51,7 @@
                     HorizontalAlignment="Center"
                     Margin="0,5,0,5"
                     Background="#80000000">
-            <Button Content="Open..."
+            <Button Content="Open"
                     Width="75"
                     Margin="5"
                     Command="{Binding OpenCommand}"
@@ -60,13 +73,33 @@
                       DisplayMemberPath="DisplayName"
                       SelectionChanged="AudioTracksComboBox_SelectionChanged"
                       Focusable="False"/>
+            <TextBlock Text="First Subtitle:"
+                       Margin="10,0,0,0"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
             <ComboBox Width="150"
                       Margin="5"
                       ItemsSource="{Binding SubtitleTracks}"
                       SelectedItem="{Binding SelectedSubtitleTrack}"
                       DisplayMemberPath="Name"
-                      SelectionChanged="SubtitlesComboBox_SelectionChanged"
+                      SelectionChanged="FirstSubtitleComboBox_SelectionChanged"
                       Focusable="False"/>
+            <TextBlock Text="Second Subtitle:"
+                       Margin="10,0,0,0"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
+            <ComboBox Width="150"
+                      Margin="5"
+                      ItemsSource="{Binding SubtitleTracks}"
+                      SelectedItem="{Binding SelectedSecondSubtitleTrack}"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="SecondSubtitleComboBox_SelectionChanged"
+                      Focusable="False"/>
+            <Button Content="Upload Subtitle"
+                    Width="120"
+                    Margin="5"
+                    Command="{Binding UploadSubtitleCommand}"
+                    Focusable="False"/>
             <TextBlock Text="{Binding CurrentTime}"
                        Margin="10,0,0,0"
                        Foreground="White"
@@ -80,5 +113,9 @@
                    Text="{Binding SubtitleText}"
                    Grid.Row="0"
                    Margin="0,0,0,120"/>
+        <TextBlock Style="{StaticResource SecondarySubtitleTextStyle}"
+                   Text="{Binding SubtitleTextSecond}"
+                   Grid.Row="0"
+                   Margin="0,120,0,0"/>
     </Grid>
 </Window>

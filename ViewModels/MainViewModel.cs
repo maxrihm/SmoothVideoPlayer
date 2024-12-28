@@ -16,10 +16,12 @@ namespace SmoothVideoPlayer.ViewModels
         string currentTime;
         string totalTime;
         string subtitleText;
+        string subtitleTextSecond;
         List<MediaTrackView> audioTracks;
         MediaTrackView selectedAudioTrack;
         List<SubtitleTrackView> subtitleTracks;
         SubtitleTrackView selectedSubtitleTrack;
+        SubtitleTrackView selectedSecondSubtitleTrack;
 
         public MainViewModel(IMediaService mediaService, ISubtitleService subtitleService)
         {
@@ -32,7 +34,9 @@ namespace SmoothVideoPlayer.ViewModels
             TogglePlayPauseCommand = new RelayCommand(_ => TogglePlayPause());
             StopCommand = new RelayCommand(_ => Stop());
             AudioTrackChangedCommand = new RelayCommand(_ => AudioTrackChanged());
-            SubtitleTrackChangedCommand = new RelayCommand(_ => SubtitleTrackChanged());
+            FirstSubtitleTrackChangedCommand = new RelayCommand(_ => FirstSubtitleTrackChanged());
+            SecondSubtitleTrackChangedCommand = new RelayCommand(_ => SecondSubtitleTrackChanged());
+            UploadSubtitleCommand = new RelayCommand(async _ => await UploadSubtitle());
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
         }
@@ -41,7 +45,9 @@ namespace SmoothVideoPlayer.ViewModels
         public ICommand TogglePlayPauseCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand AudioTrackChangedCommand { get; }
-        public ICommand SubtitleTrackChangedCommand { get; }
+        public ICommand FirstSubtitleTrackChangedCommand { get; }
+        public ICommand SecondSubtitleTrackChangedCommand { get; }
+        public ICommand UploadSubtitleCommand { get; }
 
         public string CurrentTime
         {
@@ -69,6 +75,16 @@ namespace SmoothVideoPlayer.ViewModels
             set
             {
                 subtitleText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string SubtitleTextSecond
+        {
+            get => subtitleTextSecond;
+            set
+            {
+                subtitleTextSecond = value;
                 OnPropertyChanged();
             }
         }
@@ -113,18 +129,22 @@ namespace SmoothVideoPlayer.ViewModels
             }
         }
 
+        public SubtitleTrackView SelectedSecondSubtitleTrack
+        {
+            get => selectedSecondSubtitleTrack;
+            set
+            {
+                selectedSecondSubtitleTrack = value;
+                OnPropertyChanged();
+            }
+        }
+
         void MediaService_OnTimeChanged(TimeSpan current, TimeSpan total)
         {
             CurrentTime = current.ToString(@"hh\:mm\:ss");
             TotalTime = total.ToString(@"hh\:mm\:ss");
-            if (SelectedSubtitleTrack != null)
-            {
-                SubtitleText = subtitleService.GetSubtitleForTime(current);
-            }
-            else
-            {
-                SubtitleText = "";
-            }
+            SubtitleText = subtitleService.GetSubtitleForTime(current, SelectedSubtitleTrack);
+            SubtitleTextSecond = subtitleService.GetSubtitleForTime(current, SelectedSecondSubtitleTrack);
         }
 
         void MediaService_OnStopped()
@@ -132,6 +152,7 @@ namespace SmoothVideoPlayer.ViewModels
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
             SubtitleText = "";
+            SubtitleTextSecond = "";
         }
 
         async Task Open()
@@ -155,18 +176,19 @@ namespace SmoothVideoPlayer.ViewModels
                 if (SubtitleTracks.Any())
                 {
                     SelectedSubtitleTrack = SubtitleTracks.First();
-                    subtitleService.SetSelectedSubtitleTrack(SelectedSubtitleTrack);
+                    SelectedSecondSubtitleTrack = null;
                 }
             }
         }
 
         async Task<List<SubtitleTrackView>> GetSubtitleTracks(string filePath)
         {
-            var media = new LibVLCSharp.Shared.Media(new LibVLCSharp.Shared.LibVLC(), new Uri(filePath));
+            var libvlc = new LibVLCSharp.Shared.LibVLC();
+            var media = new LibVLCSharp.Shared.Media(libvlc, new Uri(filePath));
             await media.Parse(LibVLCSharp.Shared.MediaParseOptions.ParseLocal);
             var subs = media.Tracks.Where(t => t.TrackType == LibVLCSharp.Shared.TrackType.Text).ToArray();
             var extracted = await subtitleService.ExtractAndParseSubtitleTracksAsync(filePath, subs.Length);
-            return extracted;
+            return new List<SubtitleTrackView>(subtitleService.AllSubtitleTracks);
         }
 
         public void TogglePlayPause()
@@ -194,16 +216,60 @@ namespace SmoothVideoPlayer.ViewModels
             }
         }
 
-        void SubtitleTrackChanged()
+        void FirstSubtitleTrackChanged()
         {
-            if (SelectedSubtitleTrack != null)
+        }
+
+        void SecondSubtitleTrackChanged()
+        {
+        }
+
+        async Task UploadSubtitle()
+        {
+            var dlg = new OpenFileDialog
             {
-                subtitleService.SetSelectedSubtitleTrack(SelectedSubtitleTrack);
-            }
-            else
+                Filter = "Subtitle Files|*.srt;*.vtt;*.ass;*.ssa"
+            };
+            if (dlg.ShowDialog() == true)
             {
-                subtitleService.SetSelectedSubtitleTrack(null);
+                var path = dlg.FileName;
+                var parsed = await Task.Run(() => subtitleService.ExtractAndParseSubtitleTracksAsync(path, 0));
+                if (parsed != null && parsed.Count == 0)
+                {
+                    var srt = await Task.Run(() => ParseSingleSubtitle(path));
+                    if (srt != null)
+                    {
+                        subtitleService.AddSubtitleTrack(srt);
+                    }
+                }
+                SubtitleTracks = new List<SubtitleTrackView>(subtitleService.AllSubtitleTracks);
             }
+        }
+
+        SubtitleTrackView ParseSingleSubtitle(string path)
+        {
+            var fs = System.IO.File.OpenRead(path);
+            var parser = new SubtitlesParser.Classes.Parsers.SrtParser();
+            var items = parser.ParseStream(fs, System.Text.Encoding.UTF8);
+            fs.Close();
+            var trackItems = new List<ParsedSubtitleItem>();
+            foreach (var item in items)
+            {
+                trackItems.Add(new ParsedSubtitleItem
+                {
+                    StartTime = TimeSpan.FromMilliseconds(item.StartTime),
+                    EndTime = TimeSpan.FromMilliseconds(item.EndTime),
+                    Lines = item.Lines
+                });
+            }
+            var trackName = System.IO.Path.GetFileNameWithoutExtension(path);
+            var t = new SubtitleTrackView
+            {
+                Name = trackName,
+                FilePath = path,
+                ParsedSubtitles = trackItems
+            };
+            return t;
         }
     }
 }
