@@ -2,6 +2,7 @@ using LibVLCSharp.Shared;
 using SmoothVideoPlayer.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace SmoothVideoPlayer.Services
 {
@@ -14,8 +15,14 @@ namespace SmoothVideoPlayer.Services
 
         public void Initialize()
         {
+            InitializeLibVLC();
+            InitializeMediaPlayer();
+        }
+
+        void InitializeLibVLC()
+        {
             Core.Initialize();
-            var libVlcOptions = new[]
+            var options = new[]
             {
                 "--file-caching=300",
                 "--network-caching=300",
@@ -24,23 +31,27 @@ namespace SmoothVideoPlayer.Services
                 "--no-stats",
                 "--no-plugins-cache"
             };
-            libVLC = new LibVLC(libVlcOptions);
+            libVLC = new LibVLC(options);
+        }
+
+        void InitializeMediaPlayer()
+        {
             mediaPlayer = new MediaPlayer(libVLC)
             {
                 EnableHardwareDecoding = true
             };
-            mediaPlayer.TimeChanged += MediaPlayer_TimeChanged;
-            mediaPlayer.EndReached += MediaPlayer_EndReached;
+            mediaPlayer.TimeChanged += OnMediaPlayerTimeChanged;
+            mediaPlayer.EndReached += OnMediaPlayerEndReached;
         }
 
-        void MediaPlayer_TimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
+        void OnMediaPlayerTimeChanged(object sender, MediaPlayerTimeChangedEventArgs e)
         {
-            var currentTime = TimeSpan.FromMilliseconds(e.Time);
-            var totalTime = TimeSpan.FromMilliseconds(mediaPlayer.Length);
-            OnTimeChanged?.Invoke(currentTime, totalTime);
+            var current = TimeSpan.FromMilliseconds(e.Time);
+            var total = TimeSpan.FromMilliseconds(mediaPlayer.Length);
+            OnTimeChanged?.Invoke(current, total);
         }
 
-        void MediaPlayer_EndReached(object sender, EventArgs e)
+        void OnMediaPlayerEndReached(object sender, EventArgs e)
         {
             Stop();
         }
@@ -51,10 +62,12 @@ namespace SmoothVideoPlayer.Services
             {
                 mediaPlayer.Stop();
                 var media = new Media(libVLC, new Uri(filePath));
+                media.AddOption(":no-embedded-video");
+                media.AddOption(":video-on-top");
                 media.Parse(MediaParseOptions.ParseNetwork | MediaParseOptions.ParseLocal);
                 while (media.ParsedStatus != MediaParsedStatus.Done)
                 {
-                    System.Threading.Thread.Sleep(10);
+                    Thread.Sleep(10);
                 }
                 mediaPlayer.Media = media;
                 mediaPlayer.Play();

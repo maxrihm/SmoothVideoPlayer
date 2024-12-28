@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services;
@@ -13,7 +14,7 @@ namespace SmoothVideoPlayer.Views
             DataContext = new MainViewModel(new MediaService(), new SubtitleService());
         }
 
-        void AudioTracksComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        void AudioTracksComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.AudioTrackChangedCommand.CanExecute(null))
             {
@@ -21,7 +22,7 @@ namespace SmoothVideoPlayer.Views
             }
         }
 
-        void SubtitlesComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        void SubtitlesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.SubtitleTrackChangedCommand.CanExecute(null))
             {
@@ -33,30 +34,16 @@ namespace SmoothVideoPlayer.Views
         {
             if (DataContext is MainViewModel)
             {
-                var mediaService = (DataContext as MainViewModel).GetType().GetProperty("mediaService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(DataContext) as IMediaService;
-                mediaService?.Stop();
+                var svc = (DataContext as MainViewModel)
+                    .GetType()
+                    .GetProperty("mediaService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    ?.GetValue(DataContext) as IMediaService;
+                svc?.Stop();
             }
             base.OnClosed(e);
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                var mediaServiceProp = vm.GetType().GetField("mediaService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (mediaServiceProp != null)
-                {
-                    var svc = mediaServiceProp.GetValue(vm) as MediaService;
-                    if (svc != null)
-                    {
-                        videoView.MediaPlayer = null;
-                        videoView.MediaPlayer = svc.GetType().GetField("mediaPlayer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(svc) as LibVLCSharp.Shared.MediaPlayer;
-                    }
-                }
-            }
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
             {
