@@ -95,6 +95,11 @@
                       DisplayMemberPath="Name"
                       SelectionChanged="SecondSubtitleComboBox_SelectionChanged"
                       Focusable="False"/>
+            <Button Content="Parse Subs"
+                    Width="90"
+                    Margin="5"
+                    Command="{Binding ParseSubsCommand}"
+                    Focusable="False"/>
             <Button Content="Upload Subtitle"
                     Width="120"
                     Margin="5"
