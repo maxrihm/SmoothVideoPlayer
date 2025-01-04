@@ -41,13 +41,13 @@ namespace SmoothVideoPlayer.Views.Translator
         {
             if (webView.CoreWebView2 == null || string.IsNullOrEmpty(lastInjectedText)) return;
             var script =
-$@"
-textarea=document.querySelector('#textarea');
-if(textarea.hasAttribute('disabled'))textarea.removeAttribute('disabled');
-textarea.value='{lastInjectedText}';
-textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
-textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
-";
+            $@"
+            textarea=document.querySelector('#textarea');
+            if(textarea.hasAttribute('disabled'))textarea.removeAttribute('disabled');
+            textarea.value='{lastInjectedText}';
+            textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
+            textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
+            ";
             await webView.CoreWebView2.ExecuteScriptAsync(script);
         }
     }
