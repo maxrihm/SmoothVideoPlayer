@@ -5,12 +5,14 @@ using System.Windows.Input;
 using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services;
 using SmoothVideoPlayer.Services.Translator;
+using SmoothVideoPlayer.Services.AddWord;
 
 namespace SmoothVideoPlayer.Views
 {
     public partial class MainWindow : Window
     {
         ITranslatorOverlayService translatorOverlayService = new TranslatorOverlayService();
+        IAddWordOverlayService addWordOverlayService = new AddWordOverlayService();
 
         public MainWindow()
         {
@@ -79,6 +81,11 @@ namespace SmoothVideoPlayer.Views
         {
             e.Handled = true;
             Activate();
+        }
+
+        void AddWordButton_Click(object sender, RoutedEventArgs e)
+        {
+            addWordOverlayService.ToggleOverlay();
         }
     }
 }
