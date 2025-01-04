@@ -4,11 +4,14 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services;
+using SmoothVideoPlayer.Services.Translator;
 
 namespace SmoothVideoPlayer.Views
 {
     public partial class MainWindow : Window
     {
+        ITranslatorOverlayService translatorOverlayService = new TranslatorOverlayService();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -69,6 +72,7 @@ namespace SmoothVideoPlayer.Views
                     vm.JumpToNextSubtitleCommand.Execute(null);
                 }
             }
+            if (e.Key == Key.CapsLock) translatorOverlayService.ToggleOverlay();
         }
 
         void Window_MouseDown(object sender, MouseButtonEventArgs e)
