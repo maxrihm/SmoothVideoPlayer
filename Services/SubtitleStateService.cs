@@ -22,33 +22,35 @@ namespace SmoothVideoPlayer.Services
         public void JumpToNext(SubtitleTrackView track)
         {
             if (track == null || track.ParsedSubtitles == null || track.ParsedSubtitles.Count == 0) return;
+            var offset = TimeSpan.FromMilliseconds(10);
             var idx = track.ParsedSubtitles.FindIndex(x => x.StartTime <= CurrentTime && x.EndTime >= CurrentTime);
             if (idx < 0)
             {
                 idx = track.ParsedSubtitles.FindIndex(x => x.StartTime > CurrentTime);
                 if (idx < 0) return;
-                CurrentTime = track.ParsedSubtitles[idx].StartTime;
+                CurrentTime = track.ParsedSubtitles[idx].StartTime + offset;
                 return;
             }
             idx++;
             if (idx >= track.ParsedSubtitles.Count) return;
-            CurrentTime = track.ParsedSubtitles[idx].StartTime;
+            CurrentTime = track.ParsedSubtitles[idx].StartTime + offset;
         }
         public void JumpToPrevious(SubtitleTrackView track)
         {
             if (track == null || track.ParsedSubtitles == null || track.ParsedSubtitles.Count == 0) return;
+            var offset = TimeSpan.FromMilliseconds(10);
             var idx = track.ParsedSubtitles.FindIndex(x => x.StartTime <= CurrentTime && x.EndTime >= CurrentTime);
             if (idx < 0)
             {
                 idx = track.ParsedSubtitles.FindIndex(x => x.StartTime > CurrentTime);
                 if (idx <= 0) return;
                 idx--;
-                CurrentTime = track.ParsedSubtitles[idx].StartTime;
+                CurrentTime = track.ParsedSubtitles[idx].StartTime + offset;
                 return;
             }
             idx--;
             if (idx < 0) return;
-            CurrentTime = track.ParsedSubtitles[idx].StartTime;
+            CurrentTime = track.ParsedSubtitles[idx].StartTime + offset;
         }
         string GetSubtitleForTime(TimeSpan time, SubtitleTrackView track)
         {
