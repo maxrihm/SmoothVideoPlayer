@@ -14,6 +14,7 @@ namespace SmoothVideoPlayer.ViewModels
     {
         readonly IMediaService mediaService;
         readonly ISubtitleService subtitleService;
+        readonly ISubtitleStateService subtitleState;
         string currentTime;
         string totalTime;
         string subtitleText;
@@ -29,6 +30,7 @@ namespace SmoothVideoPlayer.ViewModels
         {
             this.mediaService = mediaService;
             this.subtitleService = subtitleService;
+            subtitleState = SubtitleStateService.Instance;
             mediaService.Initialize();
             mediaService.OnTimeChanged += MediaService_OnTimeChanged;
             mediaService.OnStopped += MediaService_OnStopped;
@@ -40,6 +42,8 @@ namespace SmoothVideoPlayer.ViewModels
             SecondSubtitleTrackChangedCommand = new RelayCommand(_ => SecondSubtitleTrackChanged());
             UploadSubtitleCommand = new RelayCommand(async _ => await UploadSubtitle());
             ParseSubsCommand = new RelayCommand(async _ => await ParseSubs());
+            JumpToPreviousSubtitleCommand = new RelayCommand(_ => JumpToPreviousSubtitle());
+            JumpToNextSubtitleCommand = new RelayCommand(_ => JumpToNextSubtitle());
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
         }
@@ -52,6 +56,8 @@ namespace SmoothVideoPlayer.ViewModels
         public ICommand SecondSubtitleTrackChangedCommand { get; }
         public ICommand UploadSubtitleCommand { get; }
         public ICommand ParseSubsCommand { get; }
+        public ICommand JumpToPreviousSubtitleCommand { get; }
+        public ICommand JumpToNextSubtitleCommand { get; }
 
         public string CurrentTime
         {
@@ -129,6 +135,7 @@ namespace SmoothVideoPlayer.ViewModels
             set
             {
                 selectedSubtitleTrack = value;
+                subtitleState.FirstSubtitleTrack = value;
                 OnPropertyChanged();
             }
         }
@@ -139,6 +146,7 @@ namespace SmoothVideoPlayer.ViewModels
             set
             {
                 selectedSecondSubtitleTrack = value;
+                subtitleState.SecondSubtitleTrack = value;
                 OnPropertyChanged();
             }
         }
@@ -295,18 +303,33 @@ namespace SmoothVideoPlayer.ViewModels
 
         void MediaService_OnTimeChanged(TimeSpan current, TimeSpan total)
         {
+            subtitleState.CurrentTime = current;
+            subtitleState.UpdateSubtitleText();
             CurrentTime = current.ToString(@"hh\:mm\:ss");
             TotalTime = total.ToString(@"hh\:mm\:ss");
-            SubtitleText = subtitleService.GetSubtitleForTime(current, SelectedSubtitleTrack);
-            SubtitleTextSecond = subtitleService.GetSubtitleForTime(current, SelectedSecondSubtitleTrack);
+            SubtitleText = subtitleState.FirstSubtitleText;
+            SubtitleTextSecond = subtitleState.SecondSubtitleText;
         }
 
         void MediaService_OnStopped()
         {
+            subtitleState.CurrentTime = TimeSpan.Zero;
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
             SubtitleText = "";
             SubtitleTextSecond = "";
+        }
+
+        void JumpToPreviousSubtitle()
+        {
+            subtitleState.JumpToPrevious(subtitleState.FirstSubtitleTrack);
+            if (subtitleState.CurrentTime != TimeSpan.Zero) mediaService.Seek(subtitleState.CurrentTime);
+        }
+
+        void JumpToNextSubtitle()
+        {
+            subtitleState.JumpToNext(subtitleState.FirstSubtitleTrack);
+            mediaService.Seek(subtitleState.CurrentTime);
         }
     }
 }

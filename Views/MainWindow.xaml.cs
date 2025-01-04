@@ -60,6 +60,14 @@ namespace SmoothVideoPlayer.Views
                 {
                     vm.TogglePlayPause();
                 }
+                if (e.Key == Key.A && vm.JumpToPreviousSubtitleCommand.CanExecute(null))
+                {
+                    vm.JumpToPreviousSubtitleCommand.Execute(null);
+                }
+                if (e.Key == Key.D && vm.JumpToNextSubtitleCommand.CanExecute(null))
+                {
+                    vm.JumpToNextSubtitleCommand.Execute(null);
+                }
             }
         }
 

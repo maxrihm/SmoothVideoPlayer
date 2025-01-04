@@ -128,5 +128,13 @@ namespace SmoothVideoPlayer.Services
             }
             return TimeSpan.Zero;
         }
+
+        public void Seek(TimeSpan position)
+        {
+            if (mediaPlayer != null)
+            {
+                mediaPlayer.Time = (long)position.TotalMilliseconds;
+            }
+        }
     }
 }

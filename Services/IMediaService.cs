@@ -18,5 +18,6 @@ namespace SmoothVideoPlayer.Services
         IList<MediaTrackView> GetAudioTracks();
         void SetAudioTrack(int trackId);
         TimeSpan GetLength();
+        void Seek(TimeSpan position);
     }
 }
