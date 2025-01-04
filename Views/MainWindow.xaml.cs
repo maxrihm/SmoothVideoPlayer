@@ -56,7 +56,7 @@ namespace SmoothVideoPlayer.Views
         {
             if (DataContext is MainViewModel vm)
             {
-                if (e.Key == Key.Space)
+                if (e.Key == Key.Space || e.Key == Key.W)
                 {
                     vm.TogglePlayPause();
                 }
