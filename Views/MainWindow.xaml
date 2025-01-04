@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:SmoothVideoPlayer.ViewModels"
+        xmlns:local="clr-namespace:SmoothVideoPlayer.Views.Controls"
         mc:Ignorable="d"
         Title="Smooth Video Player"
         WindowStyle="None"
@@ -114,13 +115,13 @@
                        Foreground="White"
                        VerticalAlignment="Center"/>
         </StackPanel>
-        <TextBlock Style="{StaticResource SubtitleTextStyle}"
-                   Text="{Binding SubtitleText}"
-                   Grid.Row="0"
-                   Margin="0,0,0,120"/>
-        <TextBlock Style="{StaticResource SecondarySubtitleTextStyle}"
-                   Text="{Binding SubtitleTextSecond}"
-                   Grid.Row="0"
-                   Margin="0,120,0,0"/>
+        <local:SelectableSubtitleView Grid.Row="0"
+                                      Margin="0,0,0,120"
+                                      VerticalAlignment="Bottom"
+                                      SubtitleText="{Binding SubtitleText}"/>
+        <local:SelectableSubtitleView Grid.Row="0"
+                                      Margin="0,120,0,0"
+                                      VerticalAlignment="Top"
+                                      SubtitleText="{Binding SubtitleTextSecond}"/>
     </Grid>
 </Window>
