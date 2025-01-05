@@ -1,8 +1,7 @@
 using System;
-using System.Windows;
-using SmoothVideoPlayer.Views.AddWord;
+using System.Threading.Tasks;
 using SmoothVideoPlayer.Models;
-using SmoothVideoPlayer.Services;
+using SmoothVideoPlayer.Services.AudioExtraction;
 
 namespace SmoothVideoPlayer.Services.AddWord
 {
@@ -10,13 +9,15 @@ namespace SmoothVideoPlayer.Services.AddWord
     {
         readonly IWordRepository repository;
         readonly IMediaService mediaService;
-        AddWordOverlayWindow window;
+        readonly IAudioExtractionService audioExtractionService;
         bool isOpen;
+        Views.AddWord.AddWordOverlayWindow window;
 
         public AddWordOverlayService(IWordRepository repository, IMediaService mediaService)
         {
             this.repository = repository;
             this.mediaService = mediaService;
+            audioExtractionService = new AudioExtractionService();
         }
 
         public void ToggleOverlay()
@@ -29,7 +30,7 @@ namespace SmoothVideoPlayer.Services.AddWord
             }
             else
             {
-                if (window == null) window = new AddWordOverlayWindow(this);
+                if (window == null) window = new Views.AddWord.AddWordOverlayWindow(this);
                 var s = SubtitleStateService.Instance;
                 var w = new WordTranslationRecord
                 {
@@ -43,7 +44,7 @@ namespace SmoothVideoPlayer.Services.AddWord
                     SubtitlesRuPath = s.SecondSubtitleTrack != null ? s.SecondSubtitleTrack.FilePath : "",
                     MoviePath = s.CurrentVideoFilePath
                 };
-                var screenWidth = SystemParameters.PrimaryScreenWidth;
+                var screenWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
                 var margin = 10;
                 window.Left = screenWidth - window.Width - margin;
                 window.Top = margin;
@@ -53,7 +54,7 @@ namespace SmoothVideoPlayer.Services.AddWord
             }
         }
 
-        public void AddWord(
+        public async void AddWord(
             string eng,
             string ru,
             string engContext,
@@ -65,7 +66,18 @@ namespace SmoothVideoPlayer.Services.AddWord
             string moviePath
         )
         {
-            var r = new WordTranslationRecord
+            var s = SubtitleStateService.Instance;
+            var index = s.CurrentFirstSubtitleLineNumber - 1;
+            var track = s.FirstSubtitleTrack;
+            var start = TimeSpan.Zero;
+            var duration = TimeSpan.Zero;
+            if (track != null && index >= 0 && index < track.ParsedSubtitles.Count)
+            {
+                start = track.ParsedSubtitles[index].StartTime;
+                var end = track.ParsedSubtitles[index].EndTime;
+                duration = end - start;
+            }
+            var record = new WordTranslationRecord
             {
                 EngWord = eng,
                 WordRu = ru,
@@ -75,13 +87,15 @@ namespace SmoothVideoPlayer.Services.AddWord
                 SubRuKey = ruSubKey,
                 SubtitlesEngPath = engSubPath,
                 SubtitlesRuPath = ruSubPath,
-                MoviePath = moviePath,
+                MoviePath = s.CurrentVideoFilePath,
                 DateAdded = DateTime.Now
             };
-            var screenshotFolder = @"C:\Users\morge\OneDrive\Translations\Screenshots";
-            var screenshotPath = mediaService.TakeSnapshot(screenshotFolder);
-            r.ScreenshotPath = screenshotPath;
-            repository.Add(r);
+            var screenshotPath = mediaService.TakeSnapshot(@"C:\Users\morge\OneDrive\Translations\Screenshots");
+            record.ScreenshotPath = screenshotPath;
+            var audioIndex = mediaService.SelectedAudioFfmpegIndex ?? 0;
+            var audioPath = await audioExtractionService.ExtractAudioAsync(record.MoviePath, start, duration, audioIndex);
+            record.AudioPath = audioPath;
+            if (record.AudioPath != null) await repository.AddAsync(record);
         }
     }
 }

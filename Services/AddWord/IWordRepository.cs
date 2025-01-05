@@ -1,9 +1,10 @@
 using SmoothVideoPlayer.Models;
+using System.Threading.Tasks;
 
 namespace SmoothVideoPlayer.Services.AddWord
 {
     public interface IWordRepository
     {
-        void Add(WordTranslationRecord record);
+        Task AddAsync(WordTranslationRecord record);
     }
 } 

@@ -15,9 +15,11 @@ namespace SmoothVideoPlayer.Services
         void Stop();
         bool IsPlaying();
         IList<MediaTrackView> GetAudioTracks();
-        void SetAudioTrack(int trackId);
+        void SetAudioTrack(int vlcTrackId);
         TimeSpan GetLength();
         void Seek(TimeSpan position);
         string TakeSnapshot(string folderPath);
+        int? SelectedAudioFfmpegIndex { get; }
+        void SetAudioFfmpegIndex(int index);
     }
 }

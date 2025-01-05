@@ -1,5 +1,6 @@
 using SmoothVideoPlayer.Data;
 using SmoothVideoPlayer.Models;
+using System.Threading.Tasks;
 
 namespace SmoothVideoPlayer.Services.AddWord
 {
@@ -10,10 +11,10 @@ namespace SmoothVideoPlayer.Services.AddWord
         {
             this.context = context;
         }
-        public void Add(WordTranslationRecord record)
+        public async Task AddAsync(WordTranslationRecord record)
         {
             context.WordTranslationRecords.Add(record);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 } 

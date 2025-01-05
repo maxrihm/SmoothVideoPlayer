@@ -13,7 +13,8 @@ namespace SmoothVideoPlayer.Services
         MediaPlayer mediaPlayer;
         public event Action<TimeSpan, TimeSpan> OnTimeChanged;
         public event Action OnStopped;
-
+        int? ffmpegIndex;
+        
         public void Initialize()
         {
             Core.Initialize();
@@ -102,22 +103,24 @@ namespace SmoothVideoPlayer.Services
             var list = new List<MediaTrackView>();
             if (mediaPlayer != null && mediaPlayer.Media != null && mediaPlayer.Media.Tracks != null)
             {
+                var audioIndex = 0;
                 foreach (var track in mediaPlayer.Media.Tracks)
                 {
                     if (track.TrackType == TrackType.Audio)
                     {
-                        list.Add(new MediaTrackView(track));
+                        list.Add(new MediaTrackView(track, audioIndex));
+                        audioIndex++;
                     }
                 }
             }
             return list;
         }
 
-        public void SetAudioTrack(int trackId)
+        public void SetAudioTrack(int vlcTrackId)
         {
             if (mediaPlayer != null)
             {
-                mediaPlayer.SetAudioTrack(trackId);
+                mediaPlayer.SetAudioTrack(vlcTrackId);
             }
         }
 
@@ -148,6 +151,13 @@ namespace SmoothVideoPlayer.Services
                 mediaPlayer.TakeSnapshot(0, fullPath, 0, 0);
             }
             return fullPath;
+        }
+
+        public int? SelectedAudioFfmpegIndex => ffmpegIndex;
+
+        public void SetAudioFfmpegIndex(int index)
+        {
+            ffmpegIndex = index;
         }
     }
 }

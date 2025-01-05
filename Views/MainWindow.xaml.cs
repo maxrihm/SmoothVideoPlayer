@@ -32,6 +32,13 @@ namespace SmoothVideoPlayer.Views
             if (DataContext is MainViewModel vm && vm.AudioTrackChangedCommand.CanExecute(null))
             {
                 vm.AudioTrackChangedCommand.Execute(null);
+                if (vm.SelectedAudioTrack != null)
+                {
+                    var ms = vm.GetType()
+                        .GetProperty("mediaService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                        ?.GetValue(vm) as IMediaService;
+                    if (ms != null) ms.SetAudioFfmpegIndex(vm.SelectedAudioTrack.FfmpegIndex);
+                }
             }
         }
 
