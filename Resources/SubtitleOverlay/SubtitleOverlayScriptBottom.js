@@ -1,4 +1,4 @@
 function setSubtitle(text) {
-  var container = document.getElementById('subtitleContainer');
+  var container = document.getElementById('subtitleText');
   container.innerText = text;
 } 

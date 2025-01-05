@@ -4,11 +4,37 @@
 <meta charset="utf-8">
 <script src="SubtitleOverlayScriptBottom.js"></script>
 <style>
-body { margin: 0; padding: 0; background-color: transparent; }
-#subtitleContainer { font-family: Arial; font-size: 36px; font-weight: bold; color: white; text-align: center; margin-top: 150px; }
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    overflow: hidden;
+    height: 100%;
+}
+#subtitleContainer {
+    position: absolute;
+    top: 10%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+#subtitleText {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 5px #000, 1px 1px 2px #000;
+    background-color: rgba(0,0,0,0.4);
+    padding: 0.2em 0.4em;
+    border-radius: 5px;
+    max-width: 80%;
+    text-align: center;
+}
 </style>
 </head>
 <body>
-<div id="subtitleContainer"></div>
+<div id="subtitleContainer">
+    <div id="subtitleText"></div>
+</div>
 </body>
 </html> 
