@@ -8,6 +8,7 @@ using SmoothVideoPlayer.Services.Translator;
 using SmoothVideoPlayer.Services.AddWord;
 using SmoothVideoPlayer.Data;
 using SmoothVideoPlayer.Services.GotoTimeFeature;
+using SmoothVideoPlayer.Services.SubtitleOverlay;
 
 namespace SmoothVideoPlayer.Views
 {
@@ -15,16 +16,22 @@ namespace SmoothVideoPlayer.Views
     {
         ITranslatorOverlayService translatorOverlayService;
         IAddWordOverlayService addWordOverlayService;
+        ISubtitleOverlayService subtitleOverlayService;
 
         public MainWindow()
         {
             InitializeComponent();
             var mediaSrv = new MediaService();
-            var mainVM = new MainViewModel(mediaSrv, new SubtitleService(), new GotoTimeService());
+            var subtitleSrv = new SubtitleService();
+            var gotoTimeSrv = new GotoTimeService();
+            var mainVM = new MainViewModel(mediaSrv, subtitleSrv, gotoTimeSrv);
             DataContext = mainVM;
             translatorOverlayService = new TranslatorOverlayService();
             var repository = new WordRepository(new WordTranslationDbContext());
             addWordOverlayService = new AddWordOverlayService(repository, mediaSrv);
+            subtitleOverlayService = new SubtitleOverlayService();
+            subtitleOverlayService.Initialize();
+            mainVM.SubtitleOverlayService = subtitleOverlayService;
         }
 
         void AudioTracksComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

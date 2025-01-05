@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:SmoothVideoPlayer.ViewModels"
-        xmlns:local="clr-namespace:SmoothVideoPlayer.Views.Controls"
         mc:Ignorable="d"
         Title="Smooth Video Player"
         WindowStyle="None"
@@ -14,123 +13,26 @@
         KeyDown="Window_KeyDown"
         MouseDown="Window_MouseDown">
     <Grid Focusable="True">
-        <Grid.Resources>
-            <DropShadowEffect x:Key="SubtitleOutline" BlurRadius="2" ShadowDepth="0" Color="Black" Opacity="1"/>
-            <Style x:Key="SubtitleTextStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontFamily" Value="Arial"/>
-                <Setter Property="FontSize" Value="28"/>
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="TextAlignment" Value="Center"/>
-                <Setter Property="Effect" Value="{StaticResource SubtitleOutline}"/>
-                <Setter Property="Padding" Value="10"/>
-                <Setter Property="HorizontalAlignment" Value="Center"/>
-                <Setter Property="VerticalAlignment" Value="Bottom"/>
-                <Setter Property="TextWrapping" Value="Wrap"/>
-                <Setter Property="MaxWidth" Value="1200"/>
-            </Style>
-            <Style x:Key="SecondarySubtitleTextStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontFamily" Value="Arial"/>
-                <Setter Property="FontSize" Value="28"/>
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="TextAlignment" Value="Center"/>
-                <Setter Property="Effect" Value="{StaticResource SubtitleOutline}"/>
-                <Setter Property="Padding" Value="10"/>
-                <Setter Property="HorizontalAlignment" Value="Center"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="TextWrapping" Value="Wrap"/>
-                <Setter Property="MaxWidth" Value="1200"/>
-            </Style>
-        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="0,5,0,5"
-                    Background="#80000000">
-            <Button Content="Open"
-                    Width="75"
-                    Margin="5"
-                    Command="{Binding OpenCommand}"
-                    Focusable="False"/>
-            <Button Content="Play/Pause"
-                    Width="75"
-                    Margin="5"
-                    Command="{Binding TogglePlayPauseCommand}"
-                    Focusable="False"/>
-            <Button Content="Stop"
-                    Width="75"
-                    Margin="5"
-                    Command="{Binding StopCommand}"
-                    Focusable="False"/>
-            <ComboBox Width="150"
-                      Margin="5"
-                      ItemsSource="{Binding AudioTracks}"
-                      SelectedItem="{Binding SelectedAudioTrack}"
-                      DisplayMemberPath="DisplayName"
-                      SelectionChanged="AudioTracksComboBox_SelectionChanged"
-                      Focusable="False"/>
-            <TextBlock Text="First Subtitle:"
-                       Margin="10,0,0,0"
-                       Foreground="White"
-                       VerticalAlignment="Center"/>
-            <ComboBox Width="150"
-                      Margin="5"
-                      ItemsSource="{Binding SubtitleTracks}"
-                      SelectedItem="{Binding SelectedSubtitleTrack}"
-                      DisplayMemberPath="Name"
-                      SelectionChanged="FirstSubtitleComboBox_SelectionChanged"
-                      Focusable="False"/>
-            <TextBlock Text="Second Subtitle:"
-                       Margin="10,0,0,0"
-                       Foreground="White"
-                       VerticalAlignment="Center"/>
-            <ComboBox Width="150"
-                      Margin="5"
-                      ItemsSource="{Binding SubtitleTracks}"
-                      SelectedItem="{Binding SelectedSecondSubtitleTrack}"
-                      DisplayMemberPath="Name"
-                      SelectionChanged="SecondSubtitleComboBox_SelectionChanged"
-                      Focusable="False"/>
-            <Button Content="Parse Subs"
-                    Width="90"
-                    Margin="5"
-                    Command="{Binding ParseSubsCommand}"
-                    Focusable="False"/>
-            <Button Content="Upload Subtitle"
-                    Width="120"
-                    Margin="5"
-                    Command="{Binding UploadSubtitleCommand}"
-                    Focusable="False"/>
-            <TextBlock Text="{Binding CurrentTime}"
-                       Margin="10,0,0,0"
-                       Foreground="White"
-                       VerticalAlignment="Center"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5" Background="#80000000">
+            <Button Content="Open" Width="75" Margin="5" Command="{Binding OpenCommand}" Focusable="False"/>
+            <Button Content="Play/Pause" Width="75" Margin="5" Command="{Binding TogglePlayPauseCommand}" Focusable="False"/>
+            <Button Content="Stop" Width="75" Margin="5" Command="{Binding StopCommand}" Focusable="False"/>
+            <ComboBox Width="150" Margin="5" ItemsSource="{Binding AudioTracks}" SelectedItem="{Binding SelectedAudioTrack}" DisplayMemberPath="DisplayName" SelectionChanged="AudioTracksComboBox_SelectionChanged" Focusable="False"/>
+            <TextBlock Text="First Subtitle:" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
+            <ComboBox Width="150" Margin="5" ItemsSource="{Binding SubtitleTracks}" SelectedItem="{Binding SelectedSubtitleTrack}" DisplayMemberPath="Name" SelectionChanged="FirstSubtitleComboBox_SelectionChanged" Focusable="False"/>
+            <TextBlock Text="Second Subtitle:" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
+            <ComboBox Width="150" Margin="5" ItemsSource="{Binding SubtitleTracks}" SelectedItem="{Binding SelectedSecondSubtitleTrack}" DisplayMemberPath="Name" SelectionChanged="SecondSubtitleComboBox_SelectionChanged" Focusable="False"/>
+            <Button Content="Parse Subs" Width="90" Margin="5" Command="{Binding ParseSubsCommand}" Focusable="False"/>
+            <Button Content="Upload Subtitle" Width="120" Margin="5" Command="{Binding UploadSubtitleCommand}" Focusable="False"/>
+            <TextBlock Text="{Binding CurrentTime}" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
             <TextBlock Text="/" Margin="5,0" Foreground="White" VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding TotalTime}"
-                       Foreground="White"
-                       VerticalAlignment="Center"/>
-            <Button Content="Add Word"
-                    Width="80"
-                    Margin="5"
-                    Click="AddWordButton_Click"
-                    Focusable="False"/>
-            <TextBox Width="80"
-                     Margin="5"
-                     Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}"
-                     KeyDown="GotoTimeTextBox_KeyDown"/>
+            <TextBlock Text="{Binding TotalTime}" Foreground="White" VerticalAlignment="Center"/>
+            <Button Content="Add Word" Width="80" Margin="5" Click="AddWordButton_Click" Focusable="False"/>
+            <TextBox Width="80" Margin="5" Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}" KeyDown="GotoTimeTextBox_KeyDown"/>
         </StackPanel>
-        <local:SelectableSubtitleView Grid.Row="0"
-                                      Margin="0,0,0,120"
-                                      VerticalAlignment="Bottom"
-                                      SubtitleText="{Binding SubtitleText}"/>
-        <local:SelectableSubtitleView Grid.Row="0"
-                                      Margin="0,120,0,0"
-                                      VerticalAlignment="Top"
-                                      SubtitleText="{Binding SubtitleTextSecond}"/>
     </Grid>
 </Window>

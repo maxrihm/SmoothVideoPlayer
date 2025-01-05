@@ -1,0 +1,28 @@
+<Window x:Class="SmoothVideoPlayer.Views.SubtitleOverlay.SubtitleOverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="SubtitleOverlayWindow"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual"
+        Background="Transparent"
+        Width="1920"
+        Height="1080"
+        Opacity="1">
+    <Grid>
+        <wv2:WebView2 x:Name="webViewBottom"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Top"
+                      Height="400"
+                      Width="1200"/>
+        <wv2:WebView2 x:Name="webViewTop"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Bottom"
+                      Height="400"
+                      Width="1200"/>
+    </Grid>
+</Window> 

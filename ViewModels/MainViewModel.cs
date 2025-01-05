@@ -2,6 +2,7 @@ using Microsoft.Win32;
 using SmoothVideoPlayer.Models;
 using SmoothVideoPlayer.Services;
 using SmoothVideoPlayer.Services.GotoTimeFeature;
+using SmoothVideoPlayer.Services.SubtitleOverlay;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,8 +20,6 @@ namespace SmoothVideoPlayer.ViewModels
         readonly IGotoTimeService gotoTimeService;
         string currentTime;
         string totalTime;
-        string subtitleText;
-        string subtitleTextSecond;
         List<MediaTrackView> audioTracks;
         MediaTrackView selectedAudioTrack;
         List<SubtitleTrackView> subtitleTracks;
@@ -28,6 +27,7 @@ namespace SmoothVideoPlayer.ViewModels
         SubtitleTrackView selectedSecondSubtitleTrack;
         string currentVideoFilePath;
         string gotoTimeInput;
+        public ISubtitleOverlayService SubtitleOverlayService { get; set; }
 
         public MainViewModel(IMediaService mediaService, ISubtitleService subtitleService, IGotoTimeService gotoTimeService)
         {
@@ -81,26 +81,6 @@ namespace SmoothVideoPlayer.ViewModels
             set
             {
                 totalTime = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string SubtitleText
-        {
-            get => subtitleText;
-            set
-            {
-                subtitleText = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string SubtitleTextSecond
-        {
-            get => subtitleTextSecond;
-            set
-            {
-                subtitleTextSecond = value;
                 OnPropertyChanged();
             }
         }
@@ -327,8 +307,7 @@ namespace SmoothVideoPlayer.ViewModels
             subtitleState.UpdateSubtitleText();
             CurrentTime = current.ToString(@"hh\:mm\:ss");
             TotalTime = total.ToString(@"hh\:mm\:ss");
-            SubtitleText = subtitleState.FirstSubtitleText;
-            SubtitleTextSecond = subtitleState.SecondSubtitleText;
+            if (SubtitleOverlayService != null) SubtitleOverlayService.UpdateSubtitles(subtitleState.FirstSubtitleText, subtitleState.SecondSubtitleText);
         }
 
         void MediaService_OnStopped()
@@ -336,8 +315,7 @@ namespace SmoothVideoPlayer.ViewModels
             subtitleState.CurrentTime = TimeSpan.Zero;
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
-            SubtitleText = "";
-            SubtitleTextSecond = "";
+            if (SubtitleOverlayService != null) SubtitleOverlayService.UpdateSubtitles("", "");
         }
 
         void JumpToPreviousSubtitle()
