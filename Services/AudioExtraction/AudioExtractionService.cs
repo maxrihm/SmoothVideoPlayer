@@ -11,15 +11,15 @@ namespace SmoothVideoPlayer.Services.AudioExtraction
         {
             var folder = @"C:\Users\morge\OneDrive\Translations\Audio";
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-            var fileName = Guid.NewGuid().ToString() + ".mp3";
-            var outputPath = Path.Combine(folder, fileName);
-            var startSeconds = $"{start.TotalSeconds:0.###}";
-            var lengthSeconds = $"{duration.TotalSeconds:0.###}";
-            var exe = "ffmpeg";
-            var args = $"-ss {startSeconds} -i \"{inputFilePath}\" -t {lengthSeconds} -map 0:a:{audioTrackIndex} -vn -c:a libmp3lame -q:a 3 -y \"{outputPath}\"";
+            var guid = Guid.NewGuid().ToString();
+            var outPath = Path.Combine(folder, guid + ".mp3");
+            var ss = $"{start.TotalSeconds:0.###}";
+            var ts = $"{duration.TotalSeconds:0.###}";
+            var ffmpeg = "ffmpeg";
+            var args = $"-ss {ss} -i \"{inputFilePath}\" -t {ts} -map 0:a:{audioTrackIndex} -vn -c:a libmp3lame -q:a 3 -y \"{outPath}\"";
             var psi = new ProcessStartInfo
             {
-                FileName = exe,
+                FileName = ffmpeg,
                 Arguments = args,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -28,18 +28,18 @@ namespace SmoothVideoPlayer.Services.AudioExtraction
             };
             await Task.Run(() =>
             {
-                using (var process = new Process { StartInfo = psi })
+                using (var p = new Process { StartInfo = psi })
                 {
-                    process.OutputDataReceived += (s, e) => { };
-                    process.ErrorDataReceived += (s, e) => { };
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                    process.WaitForExit();
+                    p.OutputDataReceived += (s, e) => { };
+                    p.ErrorDataReceived += (s, e) => { };
+                    p.Start();
+                    p.BeginOutputReadLine();
+                    p.BeginErrorReadLine();
+                    p.WaitForExit();
                 }
             });
-            if (!File.Exists(outputPath)) return null;
-            return outputPath;
+            if (!File.Exists(outPath)) return null;
+            return outPath;
         }
     }
 } 
