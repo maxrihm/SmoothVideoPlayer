@@ -1,7 +1,6 @@
 using SmoothVideoPlayer.Models;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SmoothVideoPlayer.Services
 {
@@ -19,5 +18,6 @@ namespace SmoothVideoPlayer.Services
         void SetAudioTrack(int trackId);
         TimeSpan GetLength();
         void Seek(TimeSpan position);
+        string TakeSnapshot(string folderPath);
     }
 }

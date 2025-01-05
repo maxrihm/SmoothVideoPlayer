@@ -2,6 +2,7 @@ using LibVLCSharp.Shared;
 using SmoothVideoPlayer.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace SmoothVideoPlayer.Services
@@ -135,6 +136,18 @@ namespace SmoothVideoPlayer.Services
             {
                 mediaPlayer.Time = (long)position.TotalMilliseconds;
             }
+        }
+
+        public string TakeSnapshot(string folderPath)
+        {
+            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+            var fileName = Guid.NewGuid().ToString() + ".png";
+            var fullPath = Path.Combine(folderPath, fileName);
+            if (mediaPlayer != null)
+            {
+                mediaPlayer.TakeSnapshot(0, fullPath, 0, 0);
+            }
+            return fullPath;
         }
     }
 }

@@ -9,12 +9,14 @@ namespace SmoothVideoPlayer.Services.AddWord
     public class AddWordOverlayService : IAddWordOverlayService
     {
         readonly IWordRepository repository;
+        readonly IMediaService mediaService;
         AddWordOverlayWindow window;
         bool isOpen;
 
-        public AddWordOverlayService(IWordRepository repository)
+        public AddWordOverlayService(IWordRepository repository, IMediaService mediaService)
         {
             this.repository = repository;
+            this.mediaService = mediaService;
         }
 
         public void ToggleOverlay()
@@ -41,11 +43,11 @@ namespace SmoothVideoPlayer.Services.AddWord
                     SubtitlesRuPath = s.SecondSubtitleTrack != null ? s.SecondSubtitleTrack.FilePath : "",
                     MoviePath = s.CurrentVideoFilePath
                 };
-                window.FillFields(w);
                 var screenWidth = SystemParameters.PrimaryScreenWidth;
                 var margin = 10;
                 window.Left = screenWidth - window.Width - margin;
                 window.Top = margin;
+                window.FillFields(w);
                 window.Show();
                 isOpen = true;
             }
@@ -76,6 +78,9 @@ namespace SmoothVideoPlayer.Services.AddWord
                 MoviePath = moviePath,
                 DateAdded = DateTime.Now
             };
+            var screenshotFolder = @"C:\Users\morge\OneDrive\Translations\Screenshots";
+            var screenshotPath = mediaService.TakeSnapshot(screenshotFolder);
+            r.ScreenshotPath = screenshotPath;
             repository.Add(r);
         }
     }
