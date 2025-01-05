@@ -157,6 +157,7 @@ namespace SmoothVideoPlayer.ViewModels
             set
             {
                 currentVideoFilePath = value;
+                subtitleState.CurrentVideoFilePath = value;
                 OnPropertyChanged();
             }
         }
@@ -282,13 +283,16 @@ namespace SmoothVideoPlayer.ViewModels
             var items = parser.ParseStream(fs, System.Text.Encoding.UTF8);
             fs.Close();
             var trackItems = new List<ParsedSubtitleItem>();
-            foreach (var item in items)
+            var index = 0;
+            foreach (var it in items)
             {
+                index++;
                 trackItems.Add(new ParsedSubtitleItem
                 {
-                    StartTime = TimeSpan.FromMilliseconds(item.StartTime),
-                    EndTime = TimeSpan.FromMilliseconds(item.EndTime),
-                    Lines = item.Lines
+                    LineNumber = index,
+                    StartTime = TimeSpan.FromMilliseconds(it.StartTime),
+                    EndTime = TimeSpan.FromMilliseconds(it.EndTime),
+                    Lines = it.Lines
                 });
             }
             var trackName = Path.GetFileNameWithoutExtension(path);

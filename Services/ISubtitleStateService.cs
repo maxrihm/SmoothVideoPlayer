@@ -13,5 +13,8 @@ namespace SmoothVideoPlayer.Services
         void UpdateSubtitleText();
         void JumpToNext(SubtitleTrackView track);
         void JumpToPrevious(SubtitleTrackView track);
+        string CurrentVideoFilePath { get; set; }
+        int CurrentFirstSubtitleLineNumber { get; }
+        int CurrentSecondSubtitleLineNumber { get; }
     }
 }

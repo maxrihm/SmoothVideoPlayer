@@ -125,10 +125,13 @@ namespace SmoothVideoPlayer.Services
             using (var fs = File.OpenRead(srtPath))
             {
                 var items = parser.ParseStream(fs, Encoding.UTF8);
+                var index = 0;
                 foreach (var item in items)
                 {
+                    index++;
                     list.Add(new ParsedSubtitleItem
                     {
+                        LineNumber = index,
                         StartTime = TimeSpan.FromMilliseconds(item.StartTime),
                         EndTime = TimeSpan.FromMilliseconds(item.EndTime),
                         Lines = item.Lines
