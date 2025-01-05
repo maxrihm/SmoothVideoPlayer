@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using SmoothVideoPlayer.Models;
 using SmoothVideoPlayer.Services;
+using SmoothVideoPlayer.Services.GotoTimeFeature;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,7 @@ namespace SmoothVideoPlayer.ViewModels
         readonly IMediaService mediaService;
         readonly ISubtitleService subtitleService;
         readonly ISubtitleStateService subtitleState;
+        readonly IGotoTimeService gotoTimeService;
         string currentTime;
         string totalTime;
         string subtitleText;
@@ -25,11 +27,13 @@ namespace SmoothVideoPlayer.ViewModels
         SubtitleTrackView selectedSubtitleTrack;
         SubtitleTrackView selectedSecondSubtitleTrack;
         string currentVideoFilePath;
+        string gotoTimeInput;
 
-        public MainViewModel(IMediaService mediaService, ISubtitleService subtitleService)
+        public MainViewModel(IMediaService mediaService, ISubtitleService subtitleService, IGotoTimeService gotoTimeService)
         {
             this.mediaService = mediaService;
             this.subtitleService = subtitleService;
+            this.gotoTimeService = gotoTimeService;
             subtitleState = SubtitleStateService.Instance;
             mediaService.Initialize();
             mediaService.OnTimeChanged += MediaService_OnTimeChanged;
@@ -44,6 +48,7 @@ namespace SmoothVideoPlayer.ViewModels
             ParseSubsCommand = new RelayCommand(async _ => await ParseSubs());
             JumpToPreviousSubtitleCommand = new RelayCommand(_ => JumpToPreviousSubtitle());
             JumpToNextSubtitleCommand = new RelayCommand(_ => JumpToNextSubtitle());
+            GotoTimeCommand = new RelayCommand(_ => ExecuteGotoTime());
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
         }
@@ -58,6 +63,7 @@ namespace SmoothVideoPlayer.ViewModels
         public ICommand ParseSubsCommand { get; }
         public ICommand JumpToPreviousSubtitleCommand { get; }
         public ICommand JumpToNextSubtitleCommand { get; }
+        public ICommand GotoTimeCommand { get; }
 
         public string CurrentTime
         {
@@ -158,6 +164,16 @@ namespace SmoothVideoPlayer.ViewModels
             {
                 currentVideoFilePath = value;
                 subtitleState.CurrentVideoFilePath = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string GotoTimeInput
+        {
+            get => gotoTimeInput;
+            set
+            {
+                gotoTimeInput = value;
                 OnPropertyChanged();
             }
         }
@@ -295,7 +311,7 @@ namespace SmoothVideoPlayer.ViewModels
                     Lines = it.Lines
                 });
             }
-            var trackName = Path.GetFileNameWithoutExtension(path);
+            var trackName = System.IO.Path.GetFileNameWithoutExtension(path);
             var t = new SubtitleTrackView
             {
                 Name = trackName,
@@ -334,6 +350,12 @@ namespace SmoothVideoPlayer.ViewModels
         {
             subtitleState.JumpToNext(subtitleState.FirstSubtitleTrack);
             mediaService.Seek(subtitleState.CurrentTime);
+        }
+
+        void ExecuteGotoTime()
+        {
+            var target = gotoTimeService.ParseGotoTime(GotoTimeInput, mediaService.GetLength());
+            mediaService.Seek(target);
         }
     }
 }

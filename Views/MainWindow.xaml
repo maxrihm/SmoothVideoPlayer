@@ -119,6 +119,10 @@
                     Margin="5"
                     Click="AddWordButton_Click"
                     Focusable="False"/>
+            <TextBox Width="80"
+                     Margin="5"
+                     Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}"
+                     KeyDown="GotoTimeTextBox_KeyDown"/>
         </StackPanel>
         <local:SelectableSubtitleView Grid.Row="0"
                                       Margin="0,0,0,120"

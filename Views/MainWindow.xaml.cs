@@ -7,6 +7,7 @@ using SmoothVideoPlayer.Services;
 using SmoothVideoPlayer.Services.Translator;
 using SmoothVideoPlayer.Services.AddWord;
 using SmoothVideoPlayer.Data;
+using SmoothVideoPlayer.Services.GotoTimeFeature;
 
 namespace SmoothVideoPlayer.Views
 {
@@ -17,7 +18,7 @@ namespace SmoothVideoPlayer.Views
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel(new MediaService(), new SubtitleService());
+            DataContext = new MainViewModel(new MediaService(), new SubtitleService(), new GotoTimeService());
             translatorOverlayService = new TranslatorOverlayService();
             var repository = new WordRepository(new WordTranslationDbContext());
             addWordOverlayService = new AddWordOverlayService(repository);
@@ -82,6 +83,17 @@ namespace SmoothVideoPlayer.Views
         void AddWordButton_Click(object sender, RoutedEventArgs e)
         {
             addWordOverlayService.ToggleOverlay();
+        }
+        void GotoTimeTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (DataContext is MainViewModel vm && vm.GotoTimeCommand.CanExecute(null))
+                {
+                    vm.GotoTimeCommand.Execute(null);
+                }
+                (sender as TextBox)?.Clear();
+            }
         }
     }
 }
