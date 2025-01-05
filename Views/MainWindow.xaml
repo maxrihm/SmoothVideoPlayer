@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:SmoothVideoPlayer.ViewModels"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="Smooth Video Player"
         WindowStyle="None"
@@ -17,15 +18,49 @@
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5" Background="#80000000">
+        <Grid Grid.Row="0">
+            <wv2:WebView2 x:Name="webViewBottom"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Top"
+                          Width="1200"
+                          Height="400"/>
+            <wv2:WebView2 x:Name="webViewTop"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Bottom"
+                          Width="1200"
+                          Height="400"/>
+        </Grid>
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,5,0,5"
+                    Background="#80000000">
             <Button Content="Open" Width="75" Margin="5" Command="{Binding OpenCommand}" Focusable="False"/>
             <Button Content="Play/Pause" Width="75" Margin="5" Command="{Binding TogglePlayPauseCommand}" Focusable="False"/>
             <Button Content="Stop" Width="75" Margin="5" Command="{Binding StopCommand}" Focusable="False"/>
-            <ComboBox Width="150" Margin="5" ItemsSource="{Binding AudioTracks}" SelectedItem="{Binding SelectedAudioTrack}" DisplayMemberPath="DisplayName" SelectionChanged="AudioTracksComboBox_SelectionChanged" Focusable="False"/>
+            <ComboBox Width="150"
+                      Margin="5"
+                      ItemsSource="{Binding AudioTracks}"
+                      SelectedItem="{Binding SelectedAudioTrack}"
+                      DisplayMemberPath="DisplayName"
+                      SelectionChanged="AudioTracksComboBox_SelectionChanged"
+                      Focusable="False"/>
             <TextBlock Text="First Subtitle:" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
-            <ComboBox Width="150" Margin="5" ItemsSource="{Binding SubtitleTracks}" SelectedItem="{Binding SelectedSubtitleTrack}" DisplayMemberPath="Name" SelectionChanged="FirstSubtitleComboBox_SelectionChanged" Focusable="False"/>
+            <ComboBox Width="150"
+                      Margin="5"
+                      ItemsSource="{Binding SubtitleTracks}"
+                      SelectedItem="{Binding SelectedSubtitleTrack}"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="FirstSubtitleComboBox_SelectionChanged"
+                      Focusable="False"/>
             <TextBlock Text="Second Subtitle:" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
-            <ComboBox Width="150" Margin="5" ItemsSource="{Binding SubtitleTracks}" SelectedItem="{Binding SelectedSecondSubtitleTrack}" DisplayMemberPath="Name" SelectionChanged="SecondSubtitleComboBox_SelectionChanged" Focusable="False"/>
+            <ComboBox Width="150"
+                      Margin="5"
+                      ItemsSource="{Binding SubtitleTracks}"
+                      SelectedItem="{Binding SelectedSecondSubtitleTrack}"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="SecondSubtitleComboBox_SelectionChanged"
+                      Focusable="False"/>
             <Button Content="Parse Subs" Width="90" Margin="5" Command="{Binding ParseSubsCommand}" Focusable="False"/>
             <Button Content="Upload Subtitle" Width="120" Margin="5" Command="{Binding UploadSubtitleCommand}" Focusable="False"/>
             <TextBlock Text="{Binding CurrentTime}" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>

@@ -2,7 +2,6 @@ using Microsoft.Win32;
 using SmoothVideoPlayer.Models;
 using SmoothVideoPlayer.Services;
 using SmoothVideoPlayer.Services.GotoTimeFeature;
-using SmoothVideoPlayer.Services.SubtitleOverlay;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +26,8 @@ namespace SmoothVideoPlayer.ViewModels
         SubtitleTrackView selectedSecondSubtitleTrack;
         string currentVideoFilePath;
         string gotoTimeInput;
-        public ISubtitleOverlayService SubtitleOverlayService { get; set; }
+
+        public IMediaService MediaService => mediaService;
 
         public MainViewModel(IMediaService mediaService, ISubtitleService subtitleService, IGotoTimeService gotoTimeService)
         {
@@ -52,7 +52,6 @@ namespace SmoothVideoPlayer.ViewModels
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
         }
-
         public ICommand OpenCommand { get; }
         public ICommand TogglePlayPauseCommand { get; }
         public ICommand StopCommand { get; }
@@ -64,7 +63,6 @@ namespace SmoothVideoPlayer.ViewModels
         public ICommand JumpToPreviousSubtitleCommand { get; }
         public ICommand JumpToNextSubtitleCommand { get; }
         public ICommand GotoTimeCommand { get; }
-
         public string CurrentTime
         {
             get => currentTime;
@@ -74,7 +72,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public string TotalTime
         {
             get => totalTime;
@@ -84,7 +81,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public List<MediaTrackView> AudioTracks
         {
             get => audioTracks;
@@ -94,7 +90,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public MediaTrackView SelectedAudioTrack
         {
             get => selectedAudioTrack;
@@ -104,7 +99,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public List<SubtitleTrackView> SubtitleTracks
         {
             get => subtitleTracks;
@@ -114,7 +108,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public SubtitleTrackView SelectedSubtitleTrack
         {
             get => selectedSubtitleTrack;
@@ -125,7 +118,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public SubtitleTrackView SelectedSecondSubtitleTrack
         {
             get => selectedSecondSubtitleTrack;
@@ -136,7 +128,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public string CurrentVideoFilePath
         {
             get => currentVideoFilePath;
@@ -147,7 +138,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public string GotoTimeInput
         {
             get => gotoTimeInput;
@@ -157,7 +147,6 @@ namespace SmoothVideoPlayer.ViewModels
                 OnPropertyChanged();
             }
         }
-
         async Task Open()
         {
             var dlg = new OpenFileDialog
@@ -178,7 +167,6 @@ namespace SmoothVideoPlayer.ViewModels
                 LoadSubtitlesIfFolderExists();
             }
         }
-
         void LoadSubtitlesIfFolderExists()
         {
             if (string.IsNullOrEmpty(CurrentVideoFilePath)) return;
@@ -200,7 +188,6 @@ namespace SmoothVideoPlayer.ViewModels
                 SelectedSecondSubtitleTrack = null;
             }
         }
-
         async Task ParseSubs()
         {
             if (string.IsNullOrEmpty(CurrentVideoFilePath)) return;
@@ -224,31 +211,25 @@ namespace SmoothVideoPlayer.ViewModels
                 SelectedSecondSubtitleTrack = null;
             }
         }
-
         public void TogglePlayPause()
         {
             if (mediaService.IsPlaying()) mediaService.Pause();
             else mediaService.Play();
         }
-
         void Stop()
         {
             mediaService.Stop();
         }
-
         void AudioTrackChanged()
         {
             if (SelectedAudioTrack != null) mediaService.SetAudioTrack(SelectedAudioTrack.Track.Id);
         }
-
         void FirstSubtitleTrackChanged()
         {
         }
-
         void SecondSubtitleTrackChanged()
         {
         }
-
         async Task UploadSubtitle()
         {
             var dlg = new OpenFileDialog
@@ -271,7 +252,6 @@ namespace SmoothVideoPlayer.ViewModels
                 }
             }
         }
-
         SubtitleTrackView ParseSingleSubtitle(string path)
         {
             var fs = File.OpenRead(path);
@@ -300,36 +280,29 @@ namespace SmoothVideoPlayer.ViewModels
             };
             return t;
         }
-
         void MediaService_OnTimeChanged(TimeSpan current, TimeSpan total)
         {
             subtitleState.CurrentTime = current;
             subtitleState.UpdateSubtitleText();
             CurrentTime = current.ToString(@"hh\:mm\:ss");
             TotalTime = total.ToString(@"hh\:mm\:ss");
-            if (SubtitleOverlayService != null) SubtitleOverlayService.UpdateSubtitles(subtitleState.FirstSubtitleText, subtitleState.SecondSubtitleText);
         }
-
         void MediaService_OnStopped()
         {
             subtitleState.CurrentTime = TimeSpan.Zero;
             CurrentTime = "00:00:00";
             TotalTime = "00:00:00";
-            if (SubtitleOverlayService != null) SubtitleOverlayService.UpdateSubtitles("", "");
         }
-
         void JumpToPreviousSubtitle()
         {
             subtitleState.JumpToPrevious(subtitleState.FirstSubtitleTrack);
             if (subtitleState.CurrentTime != TimeSpan.Zero) mediaService.Seek(subtitleState.CurrentTime);
         }
-
         void JumpToNextSubtitle()
         {
             subtitleState.JumpToNext(subtitleState.FirstSubtitleTrack);
             mediaService.Seek(subtitleState.CurrentTime);
         }
-
         void ExecuteGotoTime()
         {
             var target = gotoTimeService.ParseGotoTime(GotoTimeInput, mediaService.GetLength());
