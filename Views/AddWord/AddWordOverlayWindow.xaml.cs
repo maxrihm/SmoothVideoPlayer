@@ -1,12 +1,15 @@
 using System.Windows;
+using SmoothVideoPlayer.Services.AddWord;
 
 namespace SmoothVideoPlayer.Views.AddWord
 {
     public partial class AddWordOverlayWindow : Window
     {
-        public AddWordOverlayWindow()
+        readonly IAddWordOverlayService service;
+        public AddWordOverlayWindow(IAddWordOverlayService service)
         {
             InitializeComponent();
+            this.service = service;
         }
         public void ClearFields()
         {
@@ -17,7 +20,14 @@ namespace SmoothVideoPlayer.Views.AddWord
         }
         void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Word added: " + EnglishWordTextBox.Text);
+            service.AddWord(
+                EnglishWordTextBox.Text,
+                WordRuTextBox.Text,
+                SubtitleEngContextTextBox.Text,
+                SubtitleRuContextTextBox.Text
+            );
+            ClearFields();
+            Hide();
         }
     }
 } 

@@ -6,20 +6,22 @@ using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services;
 using SmoothVideoPlayer.Services.Translator;
 using SmoothVideoPlayer.Services.AddWord;
+using SmoothVideoPlayer.Data;
 
 namespace SmoothVideoPlayer.Views
 {
     public partial class MainWindow : Window
     {
-        ITranslatorOverlayService translatorOverlayService = new TranslatorOverlayService();
-        IAddWordOverlayService addWordOverlayService = new AddWordOverlayService();
-
+        ITranslatorOverlayService translatorOverlayService;
+        IAddWordOverlayService addWordOverlayService;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new MainViewModel(new MediaService(), new SubtitleService());
+            translatorOverlayService = new TranslatorOverlayService();
+            var repository = new WordRepository(new WordTranslationDbContext());
+            addWordOverlayService = new AddWordOverlayService(repository);
         }
-
         void AudioTracksComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.AudioTrackChangedCommand.CanExecute(null))
@@ -27,7 +29,6 @@ namespace SmoothVideoPlayer.Views
                 vm.AudioTrackChangedCommand.Execute(null);
             }
         }
-
         void FirstSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.FirstSubtitleTrackChangedCommand.CanExecute(null))
@@ -35,7 +36,6 @@ namespace SmoothVideoPlayer.Views
                 vm.FirstSubtitleTrackChangedCommand.Execute(null);
             }
         }
-
         void SecondSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.SecondSubtitleTrackChangedCommand.CanExecute(null))
@@ -43,7 +43,6 @@ namespace SmoothVideoPlayer.Views
                 vm.SecondSubtitleTrackChangedCommand.Execute(null);
             }
         }
-
         protected override void OnClosed(EventArgs e)
         {
             if (DataContext is MainViewModel)
@@ -56,7 +55,6 @@ namespace SmoothVideoPlayer.Views
             }
             base.OnClosed(e);
         }
-
         void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is MainViewModel vm)
@@ -76,13 +74,11 @@ namespace SmoothVideoPlayer.Views
             }
             if (e.Key == Key.CapsLock) translatorOverlayService.ToggleOverlay();
         }
-
         void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             Activate();
         }
-
         void AddWordButton_Click(object sender, RoutedEventArgs e)
         {
             addWordOverlayService.ToggleOverlay();
