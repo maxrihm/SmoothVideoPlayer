@@ -1,11 +1,11 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using SmoothVideoPlayer.Services.AddWord;
 using SmoothVideoPlayer.Services.Translator;
-using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services.OverlayManager;
+using SmoothVideoPlayer.ViewModels;
+using SmoothVideoPlayer.Services.TimeJumpFeature;
 
 namespace SmoothVideoPlayer.Services.GlobalHotkeys
 {
@@ -20,6 +20,9 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
         [DllImport("user32.dll")]
         static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("user32.dll")]
+        static extern short GetAsyncKeyState(int vKey);
+
         delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         const int WH_KEYBOARD_LL = 13;
@@ -31,6 +34,7 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
         readonly ITranslatorOverlayService translatorOverlayService;
         readonly IAddWordOverlayService addWordOverlayService;
         readonly IOverlayManager overlayManager;
+        readonly ITimeJumpService timeJumpService;
         IntPtr hookId;
         LowLevelKeyboardProc keyboardProc;
 
@@ -44,6 +48,7 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
             this.translatorOverlayService = translatorOverlayService;
             this.addWordOverlayService = addWordOverlayService;
             this.overlayManager = overlayManager;
+            timeJumpService = new TimeJumpService(mainViewModel.MediaService);
         }
 
         public void Initialize()
@@ -55,6 +60,11 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
         public void Dispose()
         {
             if (hookId != IntPtr.Zero) UnhookWindowsHookEx(hookId);
+        }
+
+        bool IsKeyDown(int vk)
+        {
+            return (GetAsyncKeyState(vk) & 0x8000) != 0;
         }
 
         IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -77,16 +87,26 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
                     }
                     else if (vkCode == (int)Keys.A)
                     {
-                        if (mainViewModel.JumpToPreviousSubtitleCommand.CanExecute(null))
+                        if (IsKeyDown(0x10)) timeJumpService.JumpSeconds(-10);
+                        else if (IsKeyDown(0x11)) timeJumpService.JumpSeconds(-30);
+                        else
                         {
-                            mainViewModel.JumpToPreviousSubtitleCommand.Execute(null);
+                            if (mainViewModel.JumpToPreviousSubtitleCommand.CanExecute(null))
+                            {
+                                mainViewModel.JumpToPreviousSubtitleCommand.Execute(null);
+                            }
                         }
                     }
                     else if (vkCode == (int)Keys.D)
                     {
-                        if (mainViewModel.JumpToNextSubtitleCommand.CanExecute(null))
+                        if (IsKeyDown(0x10)) timeJumpService.JumpSeconds(10);
+                        else if (IsKeyDown(0x11)) timeJumpService.JumpSeconds(30);
+                        else
                         {
-                            mainViewModel.JumpToNextSubtitleCommand.Execute(null);
+                            if (mainViewModel.JumpToNextSubtitleCommand.CanExecute(null))
+                            {
+                                mainViewModel.JumpToNextSubtitleCommand.Execute(null);
+                            }
                         }
                     }
                 }

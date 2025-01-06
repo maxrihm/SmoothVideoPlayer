@@ -167,5 +167,11 @@ namespace SmoothVideoPlayer.Services
         {
             currentFfmpegIndex = ffIndex;
         }
+
+        public TimeSpan GetCurrentPosition()
+        {
+            if (mediaPlayer == null) return TimeSpan.Zero;
+            return TimeSpan.FromMilliseconds(mediaPlayer.Time);
+        }
     }
 }

@@ -21,5 +21,6 @@ namespace SmoothVideoPlayer.Services
         string TakeSnapshot(string folderPath);
         int? SelectedAudioFfmpegIndex { get; }
         void SetAudioFfmpegIndex(int index);
+        TimeSpan GetCurrentPosition();
     }
 }
