@@ -23,11 +23,13 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
 
         const int WH_KEYBOARD_LL = 13;
         const int WM_KEYDOWN = 0x0100;
+        const int WM_SYSKEYDOWN = 0x0104;
         const int VK_CAPSLOCK = 0x14;
 
         readonly MainViewModel mainViewModel;
         readonly ITranslatorOverlayService translatorOverlayService;
         readonly IAddWordOverlayService addWordOverlayService;
+
         bool hotkeysEnabled = true;
         IntPtr hookId;
         LowLevelKeyboardProc keyboardProc;
@@ -55,38 +57,44 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
 
         IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam.ToInt32() == WM_KEYDOWN)
+            if (nCode >= 0)
             {
-                int vkCode = Marshal.ReadInt32(lParam);
+                int msg = wParam.ToInt32();
+                if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN)
+                {
+                    int vkCode = Marshal.ReadInt32(lParam);
 
-                if (vkCode == VK_CAPSLOCK)
-                {
-                    translatorOverlayService.ToggleOverlay();
-                    hotkeysEnabled = !(translatorOverlayService.IsOverlayOpen || addWordOverlayService.IsOverlayOpen);
-                    return CallNextHookEx(hookId, nCode, wParam, lParam);
-                }
-
-                if (!hotkeysEnabled || translatorOverlayService.IsOverlayOpen || addWordOverlayService.IsOverlayOpen)
-                {
-                    return CallNextHookEx(hookId, nCode, wParam, lParam);
-                }
-
-                if (vkCode == (int)Keys.Space || vkCode == (int)Keys.W)
-                {
-                    mainViewModel.TogglePlayPause();
-                }
-                else if (vkCode == (int)Keys.A)
-                {
-                    if (mainViewModel.JumpToPreviousSubtitleCommand.CanExecute(null))
+                    // Completely consume CapsLock so it never toggles system CapsLock
+                    if (vkCode == VK_CAPSLOCK)
                     {
-                        mainViewModel.JumpToPreviousSubtitleCommand.Execute(null);
+                        translatorOverlayService.ToggleOverlay();
+                        hotkeysEnabled = !(translatorOverlayService.IsOverlayOpen || addWordOverlayService.IsOverlayOpen);
+                        // Return any nonzero to consume the event, preventing Windows from toggling CapsLock
+                        return (IntPtr)1;
                     }
-                }
-                else if (vkCode == (int)Keys.D)
-                {
-                    if (mainViewModel.JumpToNextSubtitleCommand.CanExecute(null))
+
+                    if (!hotkeysEnabled || translatorOverlayService.IsOverlayOpen || addWordOverlayService.IsOverlayOpen)
                     {
-                        mainViewModel.JumpToNextSubtitleCommand.Execute(null);
+                        return CallNextHookEx(hookId, nCode, wParam, lParam);
+                    }
+
+                    if (vkCode == (int)Keys.Space || vkCode == (int)Keys.W)
+                    {
+                        mainViewModel.TogglePlayPause();
+                    }
+                    else if (vkCode == (int)Keys.A)
+                    {
+                        if (mainViewModel.JumpToPreviousSubtitleCommand.CanExecute(null))
+                        {
+                            mainViewModel.JumpToPreviousSubtitleCommand.Execute(null);
+                        }
+                    }
+                    else if (vkCode == (int)Keys.D)
+                    {
+                        if (mainViewModel.JumpToNextSubtitleCommand.CanExecute(null))
+                        {
+                            mainViewModel.JumpToNextSubtitleCommand.Execute(null);
+                        }
                     }
                 }
             }
