@@ -143,6 +143,7 @@ namespace SmoothVideoPlayer.Views
                     vm.GotoTimeCommand.Execute(null);
                 }
                 (sender as TextBox)?.Clear();
+                System.Windows.Input.Keyboard.ClearFocus();
             }
         }
     }

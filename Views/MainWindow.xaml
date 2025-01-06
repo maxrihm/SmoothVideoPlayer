@@ -62,7 +62,10 @@
             <TextBlock Text="/" Margin="5,0" Foreground="White" VerticalAlignment="Center"/>
             <TextBlock Text="{Binding TotalTime}" Foreground="White" VerticalAlignment="Center"/>
             <Button Content="Add Word" Width="80" Margin="5" Click="AddWordButton_Click" Focusable="False"/>
-            <TextBox Width="80" Margin="5" Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Width="80" 
+                     Margin="5" 
+                     Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}"
+                     KeyDown="GotoTimeTextBox_KeyDown"/>
         </StackPanel>
     </Grid>
 </Window>
