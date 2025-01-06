@@ -2,6 +2,7 @@ namespace SmoothVideoPlayer.Services.AddWord
 {
     public interface IAddWordOverlayService
     {
+        bool IsOverlayOpen { get; }
         void ToggleOverlay();
         void AddWord(
             string eng,

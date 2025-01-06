@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 using SmoothVideoPlayer.ViewModels;
 using SmoothVideoPlayer.Services;
@@ -10,6 +9,7 @@ using SmoothVideoPlayer.Services.Translator;
 using SmoothVideoPlayer.Services.AddWord;
 using SmoothVideoPlayer.Data;
 using SmoothVideoPlayer.Services.GotoTimeFeature;
+using SmoothVideoPlayer.Services.GlobalHotkeys;
 
 namespace SmoothVideoPlayer.Views
 {
@@ -17,10 +17,12 @@ namespace SmoothVideoPlayer.Views
     {
         ITranslatorOverlayService translatorOverlayService;
         IAddWordOverlayService addWordOverlayService;
+        IGlobalHotkeyService globalHotkeyService;
         bool initializedTop;
         bool initializedBottom;
         string topText = "";
         string bottomText = "";
+
         public MainWindow()
         {
             InitializeComponent();
@@ -32,8 +34,11 @@ namespace SmoothVideoPlayer.Views
             translatorOverlayService = new TranslatorOverlayService();
             var repository = new WordRepository(new WordTranslationDbContext());
             addWordOverlayService = new AddWordOverlayService(repository, mediaSrv);
+            globalHotkeyService = new GlobalHotkeyService(mainVM, translatorOverlayService, addWordOverlayService);
+            globalHotkeyService.Initialize();
             Loaded += OnMainWindowLoaded;
         }
+
         void OnMainWindowLoaded(object sender, RoutedEventArgs e)
         {
             SetupWebView(webViewBottom, "SubtitleOverlayBottom.html", false);
@@ -63,6 +68,7 @@ namespace SmoothVideoPlayer.Views
                 });
             };
         }
+
         void SetupWebView(Microsoft.Web.WebView2.Wpf.WebView2 wv, string htmlFileName, bool isTop)
         {
             wv.EnsureCoreWebView2Async();
@@ -79,6 +85,7 @@ namespace SmoothVideoPlayer.Views
             };
             wv.Source = new Uri(htmlPath);
         }
+
         async void UpdateTopText()
         {
             if (webViewTop.CoreWebView2 != null)
@@ -88,6 +95,7 @@ namespace SmoothVideoPlayer.Views
                 await webViewTop.CoreWebView2.ExecuteScriptAsync(script);
             }
         }
+
         async void UpdateBottomText()
         {
             if (webViewBottom.CoreWebView2 != null)
@@ -97,6 +105,7 @@ namespace SmoothVideoPlayer.Views
                 await webViewBottom.CoreWebView2.ExecuteScriptAsync(script);
             }
         }
+
         void AudioTracksComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.AudioTrackChangedCommand.CanExecute(null))
@@ -108,6 +117,7 @@ namespace SmoothVideoPlayer.Views
                 }
             }
         }
+
         void FirstSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.FirstSubtitleTrackChangedCommand.CanExecute(null))
@@ -115,6 +125,7 @@ namespace SmoothVideoPlayer.Views
                 vm.FirstSubtitleTrackChangedCommand.Execute(null);
             }
         }
+
         void SecondSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.SecondSubtitleTrackChangedCommand.CanExecute(null))
@@ -122,45 +133,22 @@ namespace SmoothVideoPlayer.Views
                 vm.SecondSubtitleTrackChangedCommand.Execute(null);
             }
         }
+
         protected override void OnClosed(EventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.MediaService?.Stop();
-            }
+            if (DataContext is MainViewModel vm) vm.MediaService?.Stop();
+            globalHotkeyService.Dispose();
             base.OnClosed(e);
         }
-        void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                if (e.Key == Key.Space || e.Key == Key.W)
-                {
-                    vm.TogglePlayPause();
-                }
-                if (e.Key == Key.A && vm.JumpToPreviousSubtitleCommand.CanExecute(null))
-                {
-                    vm.JumpToPreviousSubtitleCommand.Execute(null);
-                }
-                if (e.Key == Key.D && vm.JumpToNextSubtitleCommand.CanExecute(null))
-                {
-                    vm.JumpToNextSubtitleCommand.Execute(null);
-                }
-            }
-            if (e.Key == Key.CapsLock) translatorOverlayService.ToggleOverlay();
-        }
-        void Window_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-            Activate();
-        }
+
         void AddWordButton_Click(object sender, RoutedEventArgs e)
         {
             addWordOverlayService.ToggleOverlay();
         }
-        void GotoTimeTextBox_KeyDown(object sender, KeyEventArgs e)
+
+        void GotoTimeTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
                 if (DataContext is MainViewModel vm && vm.GotoTimeCommand.CanExecute(null))
                 {

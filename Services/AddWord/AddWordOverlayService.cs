@@ -10,8 +10,10 @@ namespace SmoothVideoPlayer.Services.AddWord
         readonly IWordRepository repository;
         readonly IMediaService mediaService;
         readonly IAudioExtractionService audioExtractionService;
-        bool isOpen;
+        bool isOverlayOpen;
         Views.AddWord.AddWordOverlayWindow window;
+
+        public bool IsOverlayOpen => isOverlayOpen;
 
         public AddWordOverlayService(IWordRepository repository, IMediaService mediaService)
         {
@@ -22,11 +24,11 @@ namespace SmoothVideoPlayer.Services.AddWord
 
         public void ToggleOverlay()
         {
-            if (isOpen)
+            if (isOverlayOpen)
             {
                 window.Hide();
                 window.ClearFields();
-                isOpen = false;
+                isOverlayOpen = false;
             }
             else
             {
@@ -50,7 +52,7 @@ namespace SmoothVideoPlayer.Services.AddWord
                 window.Top = margin;
                 window.FillFields(w);
                 window.Show();
-                isOpen = true;
+                isOverlayOpen = true;
             }
         }
 

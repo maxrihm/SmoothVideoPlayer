@@ -10,9 +10,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="#01000000"
-        WindowState="Maximized"
-        KeyDown="Window_KeyDown"
-        MouseDown="Window_MouseDown">
+        WindowState="Maximized">
     <Grid Focusable="True">
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -43,7 +41,6 @@
                       ItemsSource="{Binding AudioTracks}"
                       SelectedItem="{Binding SelectedAudioTrack}"
                       DisplayMemberPath="DisplayName"
-                      SelectionChanged="AudioTracksComboBox_SelectionChanged"
                       Focusable="False"/>
             <TextBlock Text="First Subtitle:" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
             <ComboBox Width="150"
@@ -51,7 +48,6 @@
                       ItemsSource="{Binding SubtitleTracks}"
                       SelectedItem="{Binding SelectedSubtitleTrack}"
                       DisplayMemberPath="Name"
-                      SelectionChanged="FirstSubtitleComboBox_SelectionChanged"
                       Focusable="False"/>
             <TextBlock Text="Second Subtitle:" Margin="10,0,0,0" Foreground="White" VerticalAlignment="Center"/>
             <ComboBox Width="150"
@@ -59,7 +55,6 @@
                       ItemsSource="{Binding SubtitleTracks}"
                       SelectedItem="{Binding SelectedSecondSubtitleTrack}"
                       DisplayMemberPath="Name"
-                      SelectionChanged="SecondSubtitleComboBox_SelectionChanged"
                       Focusable="False"/>
             <Button Content="Parse Subs" Width="90" Margin="5" Command="{Binding ParseSubsCommand}" Focusable="False"/>
             <Button Content="Upload Subtitle" Width="120" Margin="5" Command="{Binding UploadSubtitleCommand}" Focusable="False"/>
@@ -67,7 +62,7 @@
             <TextBlock Text="/" Margin="5,0" Foreground="White" VerticalAlignment="Center"/>
             <TextBlock Text="{Binding TotalTime}" Foreground="White" VerticalAlignment="Center"/>
             <Button Content="Add Word" Width="80" Margin="5" Click="AddWordButton_Click" Focusable="False"/>
-            <TextBox Width="80" Margin="5" Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}" KeyDown="GotoTimeTextBox_KeyDown"/>
+            <TextBox Width="80" Margin="5" Text="{Binding GotoTimeInput, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
     </Grid>
 </Window>
