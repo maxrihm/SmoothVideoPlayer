@@ -58,8 +58,7 @@ namespace SmoothVideoPlayer.Views.AddWord
                 SubtitlesRuPathTextBox.Text,
                 ""
             );
-            ClearFields();
-            Hide();
+            service.CloseOverlay();
         }
     }
 }

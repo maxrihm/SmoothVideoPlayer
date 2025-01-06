@@ -10,6 +10,7 @@ using SmoothVideoPlayer.Services.AddWord;
 using SmoothVideoPlayer.Data;
 using SmoothVideoPlayer.Services.GotoTimeFeature;
 using SmoothVideoPlayer.Services.GlobalHotkeys;
+using SmoothVideoPlayer.Services.OverlayManager;
 
 namespace SmoothVideoPlayer.Views
 {
@@ -18,6 +19,7 @@ namespace SmoothVideoPlayer.Views
         ITranslatorOverlayService translatorOverlayService;
         IAddWordOverlayService addWordOverlayService;
         IGlobalHotkeyService globalHotkeyService;
+        IOverlayManager overlayManager;
         bool initializedTop;
         bool initializedBottom;
         string topText = "";
@@ -31,10 +33,11 @@ namespace SmoothVideoPlayer.Views
             var gotoTimeSrv = new GotoTimeService();
             var mainVM = new MainViewModel(mediaSrv, subtitleSrv, gotoTimeSrv);
             DataContext = mainVM;
-            translatorOverlayService = new TranslatorOverlayService();
+            overlayManager = new OverlayManager();
+            translatorOverlayService = new TranslatorOverlayService(overlayManager);
             var repository = new WordRepository(new WordTranslationDbContext());
-            addWordOverlayService = new AddWordOverlayService(repository, mediaSrv);
-            globalHotkeyService = new GlobalHotkeyService(mainVM, translatorOverlayService, addWordOverlayService);
+            addWordOverlayService = new AddWordOverlayService(repository, mediaSrv, overlayManager);
+            globalHotkeyService = new GlobalHotkeyService(mainVM, translatorOverlayService, addWordOverlayService, overlayManager);
             globalHotkeyService.Initialize();
             Loaded += OnMainWindowLoaded;
         }

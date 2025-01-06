@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using SmoothVideoPlayer.Models;
 using SmoothVideoPlayer.Services.AudioExtraction;
+using SmoothVideoPlayer.Services.OverlayManager;
 
 namespace SmoothVideoPlayer.Services.AddWord
 {
@@ -10,25 +11,35 @@ namespace SmoothVideoPlayer.Services.AddWord
         readonly IWordRepository repository;
         readonly IMediaService mediaService;
         readonly IAudioExtractionService audioExtractionService;
+        readonly IOverlayManager overlayManager;
         bool isOverlayOpen;
         Views.AddWord.AddWordOverlayWindow window;
-
         public bool IsOverlayOpen => isOverlayOpen;
 
-        public AddWordOverlayService(IWordRepository repository, IMediaService mediaService)
+        public AddWordOverlayService(IWordRepository repository, IMediaService mediaService, IOverlayManager overlayManager)
         {
             this.repository = repository;
             this.mediaService = mediaService;
             audioExtractionService = new AudioExtractionService();
+            this.overlayManager = overlayManager;
+        }
+
+        public void CloseOverlay()
+        {
+            if (isOverlayOpen && window != null)
+            {
+                window.ClearFields();
+                window.Hide();
+                isOverlayOpen = false;
+                overlayManager.UnregisterOverlay();
+            }
         }
 
         public void ToggleOverlay()
         {
             if (isOverlayOpen)
             {
-                window.Hide();
-                window.ClearFields();
-                isOverlayOpen = false;
+                CloseOverlay();
             }
             else
             {
@@ -53,6 +64,7 @@ namespace SmoothVideoPlayer.Services.AddWord
                 window.FillFields(w);
                 window.Show();
                 isOverlayOpen = true;
+                overlayManager.RegisterOverlay();
             }
         }
 

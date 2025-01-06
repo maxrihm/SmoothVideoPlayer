@@ -4,6 +4,7 @@ namespace SmoothVideoPlayer.Services.AddWord
     {
         bool IsOverlayOpen { get; }
         void ToggleOverlay();
+        void CloseOverlay();
         void AddWord(
             string eng,
             string ru,

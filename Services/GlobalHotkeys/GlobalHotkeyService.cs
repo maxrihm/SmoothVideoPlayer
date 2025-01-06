@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using SmoothVideoPlayer.Services.AddWord;
 using SmoothVideoPlayer.Services.Translator;
 using SmoothVideoPlayer.ViewModels;
+using SmoothVideoPlayer.Services.OverlayManager;
 
 namespace SmoothVideoPlayer.Services.GlobalHotkeys
 {
@@ -29,19 +30,20 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
         readonly MainViewModel mainViewModel;
         readonly ITranslatorOverlayService translatorOverlayService;
         readonly IAddWordOverlayService addWordOverlayService;
-
-        bool hotkeysEnabled = true;
+        readonly IOverlayManager overlayManager;
         IntPtr hookId;
         LowLevelKeyboardProc keyboardProc;
 
         public GlobalHotkeyService(
             MainViewModel mainViewModel,
             ITranslatorOverlayService translatorOverlayService,
-            IAddWordOverlayService addWordOverlayService)
+            IAddWordOverlayService addWordOverlayService,
+            IOverlayManager overlayManager)
         {
             this.mainViewModel = mainViewModel;
             this.translatorOverlayService = translatorOverlayService;
             this.addWordOverlayService = addWordOverlayService;
+            this.overlayManager = overlayManager;
         }
 
         public void Initialize()
@@ -63,21 +65,12 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
                 if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN)
                 {
                     int vkCode = Marshal.ReadInt32(lParam);
-
-                    // Completely consume CapsLock so it never toggles system CapsLock
                     if (vkCode == VK_CAPSLOCK)
                     {
                         translatorOverlayService.ToggleOverlay();
-                        hotkeysEnabled = !(translatorOverlayService.IsOverlayOpen || addWordOverlayService.IsOverlayOpen);
-                        // Return any nonzero to consume the event, preventing Windows from toggling CapsLock
                         return (IntPtr)1;
                     }
-
-                    if (!hotkeysEnabled || translatorOverlayService.IsOverlayOpen || addWordOverlayService.IsOverlayOpen)
-                    {
-                        return CallNextHookEx(hookId, nCode, wParam, lParam);
-                    }
-
+                    if (!overlayManager.AreHotkeysEnabled) return CallNextHookEx(hookId, nCode, wParam, lParam);
                     if (vkCode == (int)Keys.Space || vkCode == (int)Keys.W)
                     {
                         mainViewModel.TogglePlayPause();
