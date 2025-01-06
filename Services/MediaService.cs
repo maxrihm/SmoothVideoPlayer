@@ -156,7 +156,7 @@ namespace SmoothVideoPlayer.Services
             var fp = Path.Combine(folderPath, fn);
             if (mediaPlayer != null)
             {
-                mediaPlayer.TakeSnapshot(0, fp, 0, 0);
+                mediaPlayer.TakeSnapshot(0, fp, 800, 0);  // Width=800px, height auto-scaled (0)
             }
             return fp;
         }
