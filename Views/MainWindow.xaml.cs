@@ -106,18 +106,6 @@ namespace SmoothVideoPlayer.Views
             }
         }
 
-        void AudioTracksComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm && vm.AudioTrackChangedCommand.CanExecute(null))
-            {
-                vm.AudioTrackChangedCommand.Execute(null);
-                if (vm.SelectedAudioTrack != null)
-                {
-                    if (vm.MediaService != null) vm.MediaService.SetAudioFfmpegIndex(vm.SelectedAudioTrack.FfmpegIndex);
-                }
-            }
-        }
-
         void FirstSubtitleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.FirstSubtitleTrackChangedCommand.CanExecute(null))

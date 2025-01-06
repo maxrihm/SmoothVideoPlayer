@@ -95,8 +95,12 @@ namespace SmoothVideoPlayer.ViewModels
             get => selectedAudioTrack;
             set
             {
+                if (selectedAudioTrack == value) return;
                 selectedAudioTrack = value;
                 OnPropertyChanged();
+                
+                // Call AudioTrackChanged automatically when track changes
+                AudioTrackChanged();
             }
         }
         public List<SubtitleTrackView> SubtitleTracks
@@ -222,7 +226,11 @@ namespace SmoothVideoPlayer.ViewModels
         }
         void AudioTrackChanged()
         {
-            if (SelectedAudioTrack != null) mediaService.SetAudioTrack(SelectedAudioTrack.Track.Id);
+            if (SelectedAudioTrack == null) return;
+
+            // Set both VLC audio track for playback and FFmpeg index for extraction
+            mediaService.SetAudioTrack(SelectedAudioTrack.Track.Id);
+            mediaService.SetAudioFfmpegIndex(SelectedAudioTrack.FfmpegIndex);
         }
         void FirstSubtitleTrackChanged()
         {
