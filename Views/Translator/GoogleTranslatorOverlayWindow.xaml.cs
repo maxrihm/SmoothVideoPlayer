@@ -1,13 +1,16 @@
 using System.Text.RegularExpressions;
 using System.Windows;
 using CefSharp;
+using System.Threading.Tasks;
 
 namespace SmoothVideoPlayer.Views.Translator
 {
     public partial class GoogleTranslatorOverlayWindow : Window
     {
-        bool isInitialized;
-        string lastInjectedText;
+        private bool isInitialized;
+        private string lastInjectedText;
+        private const int MAX_INJECTION_ATTEMPTS = 5;
+        private const int RETRY_DELAY_MS = 300;
 
         public GoogleTranslatorOverlayWindow()
         {
@@ -17,43 +20,86 @@ namespace SmoothVideoPlayer.Views.Translator
 
         public void SetText(string text)
         {
-            if (string.IsNullOrEmpty(text)) text = "";
+            if (string.IsNullOrEmpty(text))
+                text = "";
+
             text = Regex.Replace(text, @"\r?\n", "");
             lastInjectedText = text;
+
+            // If the browser is already loaded, try injecting right away
+            if (isInitialized)
+                InjectTextIfNeeded();
         }
 
         public void OpenOverlay()
         {
             Show();
-            if (isInitialized) InjectText();
+            if (isInitialized)
+                InjectTextIfNeeded();
         }
 
-        void OnLoaded(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            webBrowser.FrameLoadEnd += (s, args) =>
+            webBrowser.LoadingStateChanged += (s, args) =>
             {
-                if (!args.Frame.IsMain) return;
-                Dispatcher.Invoke(() =>
+                if (!args.IsLoading) // Main frame and all sub-frames are done loading
                 {
-                    isInitialized = true;
-                    InjectText();
-                });
+                    Dispatcher.Invoke(() =>
+                    {
+                        isInitialized = true;
+                        InjectTextIfNeeded();
+                    });
+                }
             };
         }
 
-        async void InjectText()
+        private async void InjectTextIfNeeded()
         {
-            if (!isInitialized || string.IsNullOrEmpty(lastInjectedText)) return;
-            var script =
-            $@"
-            textarea=document.querySelector('textarea');
-            if(textarea) {{
-              textarea.value='{lastInjectedText}';
-              textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
-              textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
-            }}
+            if (!isInitialized || string.IsNullOrEmpty(lastInjectedText))
+                return;
+
+            for (int attempt = 1; attempt <= MAX_INJECTION_ATTEMPTS; attempt++)
+            {
+                bool success = await InjectTextIntoTextAreaAsync(lastInjectedText);
+                if (success)
+                    break;
+
+                // Wait a bit before retrying, in case the translator's script is still setting up
+                await Task.Delay(RETRY_DELAY_MS);
+            }
+        }
+
+        private async Task<bool> InjectTextIntoTextAreaAsync(string text)
+        {
+            // Properly escape text for JS
+            string safeText = text
+                .Replace("\\", "\\\\")
+                .Replace("'", "\\'")
+                .Replace("\"", "\\\"");
+
+            string script = $@"
+                (function() {{
+                    var textarea = document.querySelector('textarea');
+                    if (!textarea) return false;
+
+                    textarea.value = '{safeText}';
+                    // Fire input/change events to trigger translator's internal handlers
+                    textarea.dispatchEvent(new Event('input', {{ bubbles: true, cancelable: true }}));
+                    textarea.dispatchEvent(new Event('change', {{ bubbles: true, cancelable: true }}));
+
+                    return true;
+                }})();
             ";
-            await webBrowser.GetMainFrame().EvaluateScriptAsync(script);
+
+            try
+            {
+                var response = await webBrowser.GetMainFrame().EvaluateScriptAsync(script);
+                return response?.Success == true && response.Result is bool result && result;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
