@@ -50,8 +50,7 @@ namespace SmoothVideoPlayer.Views.Translator
 
             var script =
             $@"
-            textarea=document.querySelector('#textarea');
-            if(textarea.hasAttribute('disabled'))textarea.removeAttribute('disabled');
+            textarea=document.querySelector('#fakeArea');
             textarea.value='{lastInjectedText}';
             textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
             textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
