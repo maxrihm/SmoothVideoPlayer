@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Windows;
-using Microsoft.Web.WebView2.Core;
+using CefSharp;
 using SmoothVideoPlayer.ViewModels;
 
 namespace SmoothVideoPlayer.Views.Translator
@@ -30,16 +30,24 @@ namespace SmoothVideoPlayer.Views.Translator
             if (isInitialized) InjectText();
         }
 
-        async void OnLoaded(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await webView.EnsureCoreWebView2Async();
-            isInitialized = true;
-            InjectText();
+            webBrowser.FrameLoadEnd += (s, args) =>
+            {
+                if (!args.Frame.IsMain) return;
+                
+                Dispatcher.Invoke(() =>
+                {
+                    isInitialized = true;
+                    InjectText();
+                });
+            };
         }
 
-        async void InjectText()
+        private async void InjectText()
         {
-            if (webView.CoreWebView2 == null || string.IsNullOrEmpty(lastInjectedText)) return;
+            if (!isInitialized || string.IsNullOrEmpty(lastInjectedText)) return;
+
             var script =
             $@"
             textarea=document.querySelector('#textarea');
@@ -48,7 +56,8 @@ namespace SmoothVideoPlayer.Views.Translator
             textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
             textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
             ";
-            await webView.CoreWebView2.ExecuteScriptAsync(script);
+            
+            await webBrowser.EvaluateScriptAsync(script);
         }
     }
 }

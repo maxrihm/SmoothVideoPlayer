@@ -1,7 +1,7 @@
 <Window x:Class="SmoothVideoPlayer.Views.Translator.TranslatorOverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:cef="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         Title="Translator Overlay"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -14,9 +14,9 @@
         Opacity="0.8"
         Background="#AA000000">
     <Grid>
-        <wv2:WebView2 x:Name="webView"
-                      Source="{Binding Url}"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"/>
+        <cef:ChromiumWebBrowser x:Name="webBrowser"
+                               Address="{Binding Url}"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch"/>
     </Grid>
 </Window>
