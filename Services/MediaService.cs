@@ -21,12 +21,18 @@ namespace SmoothVideoPlayer.Services
             Core.Initialize();
             var options = new[]
             {
-                "--file-caching=300",
-                "--network-caching=300",
-                "--live-caching=300",
+                "--file-caching=100",
+                "--network-caching=100",
+                "--live-caching=100",
                 "--avcodec-hw=any",
                 "--no-stats",
-                "--no-plugins-cache"
+                "--no-plugins-cache",
+                "--no-audio-time-stretch",
+                "--audio-resampler=soxr",
+                "--no-drop-late-frames",
+                "--no-skip-frames",
+                "--clock-jitter=0",
+                "--clock-synchro=0"
             };
             libVLC = new LibVLC(options);
             mediaPlayer = new MediaPlayer(libVLC)
