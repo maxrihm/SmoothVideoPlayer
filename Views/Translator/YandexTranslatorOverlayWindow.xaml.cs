@@ -47,9 +47,11 @@ namespace SmoothVideoPlayer.Views.Translator
             var script =
             $@"
             textarea=document.querySelector('#fakeArea');
-            textarea.value='{lastInjectedText}';
-            textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
-            textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
+            if(textarea) {{
+              textarea.value='{lastInjectedText}';
+              textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
+              textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
+            }}
             ";
             await webBrowser.EvaluateScriptAsync(script);
         }

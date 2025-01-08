@@ -7,10 +7,12 @@
         AllowsTransparency="True"
         Topmost="True"
         ShowInTaskbar="False"
-        WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Height="800"
-        Width="1200"
+        WindowStartupLocation="Manual"
+        Left="360"
+        Top="240"
+        Width="600"
+        Height="700"
         Opacity="0.8"
         Background="#AA000000">
     <Grid>
