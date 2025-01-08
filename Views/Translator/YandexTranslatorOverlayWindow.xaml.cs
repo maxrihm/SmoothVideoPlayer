@@ -53,7 +53,7 @@ namespace SmoothVideoPlayer.Views.Translator
               textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
             }}
             ";
-            await webBrowser.EvaluateScriptAsync(script);
+            await webBrowser.GetMainFrame().EvaluateScriptAsync(script);
         }
     }
 }
