@@ -4,14 +4,14 @@ using SmoothVideoPlayer.Services.OverlayManager;
 
 namespace SmoothVideoPlayer.Services.Translator
 {
-    public class TranslatorOverlayService : ITranslatorOverlayService
+    public class YandexTranslatorOverlayService : ITranslatorOverlayService
     {
         readonly IOverlayManager overlayManager;
-        TranslatorOverlayWindow window;
+        YandexTranslatorOverlayWindow window;
         bool isOverlayOpen;
         public bool IsOverlayOpen => isOverlayOpen;
 
-        public TranslatorOverlayService(IOverlayManager overlayManager)
+        public YandexTranslatorOverlayService(IOverlayManager overlayManager)
         {
             this.overlayManager = overlayManager;
         }
@@ -26,7 +26,7 @@ namespace SmoothVideoPlayer.Services.Translator
             }
             else
             {
-                if (window == null) window = new TranslatorOverlayWindow();
+                if (window == null) window = new YandexTranslatorOverlayWindow();
                 window.SetText(SubtitleStateService.Instance.FirstSubtitleText);
                 window.OpenOverlay();
                 isOverlayOpen = true;

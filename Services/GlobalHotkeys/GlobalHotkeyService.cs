@@ -31,7 +31,7 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
         const int VK_CAPSLOCK = 0x14;
 
         readonly MainViewModel mainViewModel;
-        readonly ITranslatorOverlayService translatorOverlayService;
+        readonly ITranslatorOverlayService translatorOverlayAggregator;
         readonly IAddWordOverlayService addWordOverlayService;
         readonly IOverlayManager overlayManager;
         readonly ITimeJumpService timeJumpService;
@@ -40,12 +40,12 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
 
         public GlobalHotkeyService(
             MainViewModel mainViewModel,
-            ITranslatorOverlayService translatorOverlayService,
+            ITranslatorOverlayService translatorOverlayAggregator,
             IAddWordOverlayService addWordOverlayService,
             IOverlayManager overlayManager)
         {
             this.mainViewModel = mainViewModel;
-            this.translatorOverlayService = translatorOverlayService;
+            this.translatorOverlayAggregator = translatorOverlayAggregator;
             this.addWordOverlayService = addWordOverlayService;
             this.overlayManager = overlayManager;
             timeJumpService = new TimeJumpService(mainViewModel.MediaService);
@@ -77,7 +77,7 @@ namespace SmoothVideoPlayer.Services.GlobalHotkeys
                     int vkCode = Marshal.ReadInt32(lParam);
                     if (vkCode == VK_CAPSLOCK)
                     {
-                        translatorOverlayService.ToggleOverlay();
+                        translatorOverlayAggregator.ToggleOverlay();
                         return (IntPtr)1;
                     }
                     if (!overlayManager.AreHotkeysEnabled) return CallNextHookEx(hookId, nCode, wParam, lParam);

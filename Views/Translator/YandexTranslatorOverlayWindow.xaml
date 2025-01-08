@@ -1,8 +1,8 @@
-<Window x:Class="SmoothVideoPlayer.Views.Translator.TranslatorOverlayWindow"
+<Window x:Class="SmoothVideoPlayer.Views.Translator.YandexTranslatorOverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:cef="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
-        Title="Translator Overlay"
+        Title="Yandex Translator Overlay"
         WindowStyle="None"
         AllowsTransparency="True"
         Topmost="True"
@@ -15,7 +15,7 @@
         Background="#AA000000">
     <Grid>
         <cef:ChromiumWebBrowser x:Name="webBrowser"
-                               Address="{Binding Url}"
+                               Address="https://translate.yandex.com/en/translator/English-Russian"
                                HorizontalAlignment="Stretch"
                                VerticalAlignment="Stretch"/>
     </Grid>

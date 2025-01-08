@@ -16,7 +16,7 @@ namespace SmoothVideoPlayer.Views
 {
     public partial class MainWindow : Window
     {
-        ITranslatorOverlayService translatorOverlayService;
+        ITranslatorOverlayService translatorOverlayAggregator;
         IAddWordOverlayService addWordOverlayService;
         IGlobalHotkeyService globalHotkeyService;
         IOverlayManager overlayManager;
@@ -34,10 +34,12 @@ namespace SmoothVideoPlayer.Views
             var mainVM = new MainViewModel(mediaSrv, subtitleSrv, gotoTimeSrv);
             DataContext = mainVM;
             overlayManager = new OverlayManager();
-            translatorOverlayService = new TranslatorOverlayService(overlayManager);
+            var yandexService = new YandexTranslatorOverlayService(overlayManager);
+            var googleService = new GoogleTranslatorOverlayService(overlayManager);
+            translatorOverlayAggregator = new TranslatorOverlayAggregatorService(yandexService, googleService);
             var repository = new WordRepository(new WordTranslationDbContext());
             addWordOverlayService = new AddWordOverlayService(repository, mediaSrv, overlayManager);
-            globalHotkeyService = new GlobalHotkeyService(mainVM, translatorOverlayService, addWordOverlayService, overlayManager);
+            globalHotkeyService = new GlobalHotkeyService(mainVM, translatorOverlayAggregator, addWordOverlayService, overlayManager);
             globalHotkeyService.Initialize();
             Loaded += OnMainWindowLoaded;
         }

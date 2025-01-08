@@ -1,19 +1,17 @@
 using System.Text.RegularExpressions;
 using System.Windows;
 using CefSharp;
-using SmoothVideoPlayer.ViewModels;
 
 namespace SmoothVideoPlayer.Views.Translator
 {
-    public partial class TranslatorOverlayWindow : Window
+    public partial class GoogleTranslatorOverlayWindow : Window
     {
         bool isInitialized;
         string lastInjectedText;
 
-        public TranslatorOverlayWindow()
+        public GoogleTranslatorOverlayWindow()
         {
             InitializeComponent();
-            DataContext = new TranslatorOverlayViewModel();
             Loaded += OnLoaded;
         }
 
@@ -30,12 +28,11 @@ namespace SmoothVideoPlayer.Views.Translator
             if (isInitialized) InjectText();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        void OnLoaded(object sender, RoutedEventArgs e)
         {
             webBrowser.FrameLoadEnd += (s, args) =>
             {
                 if (!args.Frame.IsMain) return;
-                
                 Dispatcher.Invoke(() =>
                 {
                     isInitialized = true;
@@ -44,10 +41,9 @@ namespace SmoothVideoPlayer.Views.Translator
             };
         }
 
-        private async void InjectText()
+        async void InjectText()
         {
             if (!isInitialized || string.IsNullOrEmpty(lastInjectedText)) return;
-
             var script =
             $@"
             textarea=document.querySelector('#fakeArea');
@@ -55,8 +51,7 @@ namespace SmoothVideoPlayer.Views.Translator
             textarea.dispatchEvent(new Event('input',{{bubbles:true,cancelable:true}}));
             textarea.dispatchEvent(new Event('change',{{bubbles:true,cancelable:true}}));
             ";
-            
             await webBrowser.EvaluateScriptAsync(script);
         }
     }
-}
+} 
