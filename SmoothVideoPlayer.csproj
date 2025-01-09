@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -10,6 +10,7 @@
     <SelfContained>false</SelfContained>
     <Platform>x64</Platform>
     <CefSharpAnyCpuSupport>false</CefSharpAnyCpuSupport>
+    <ApplicationIcon>Ampeross-Qetto-2-Videos.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Ampeross-Qetto-2-Videos.ico" />
     <Content Include="Resources\SubtitleOverlay\SubtitleOverlayTop.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
