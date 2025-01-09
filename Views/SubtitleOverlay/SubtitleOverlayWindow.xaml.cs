@@ -30,27 +30,33 @@ namespace SmoothVideoPlayer.Views.SubtitleOverlay
         void SetupWebView(Microsoft.Web.WebView2.Wpf.WebView2 wv, string htmlFileName, bool isTop)
         {
             wv.EnsureCoreWebView2Async();
+
+            wv.CoreWebView2InitializationCompleted += (sender, args) =>
+            {
+                if (args.IsSuccess && wv.CoreWebView2 != null)
+                {
+                    // This ensures the WebView2 background is actually transparent
+                    wv.DefaultBackgroundColor = System.Drawing.Color.Transparent;
+                }
+            };
+
             var htmlPath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 "Resources",
                 "SubtitleOverlay",
                 htmlFileName
             );
-            MessageBox.Show($"Attempting to load: {htmlPath}");
-            wv.NavigationCompleted += async (s, e) =>
+
+            wv.NavigationCompleted += (s, e) =>
             {
-                if (isTop)
-                {
-                    initializedTop = true;
-                    UpdateTopText();
-                }
-                else
-                {
-                    initializedBottom = true;
-                    UpdateBottomText();
-                }
+                if (isTop) initializedTop = true;
+                else initializedBottom = true;
+
+                if (isTop) UpdateTopText();
+                else UpdateBottomText();
             };
-            wv.Source = new System.Uri(htmlPath);
+
+            wv.Source = new Uri(htmlPath);
         }
         public void SetTopSubtitleText(string text)
         {

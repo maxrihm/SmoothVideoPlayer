@@ -76,18 +76,32 @@ namespace SmoothVideoPlayer.Views
 
         void SetupWebView(Microsoft.Web.WebView2.Wpf.WebView2 wv, string htmlFileName, bool isTop)
         {
+            // Force creation of the CoreWebView2 environment
             wv.EnsureCoreWebView2Async();
+
+            // Hook the event to set the background to transparent
+            wv.CoreWebView2InitializationCompleted += (sender, args) =>
+            {
+                if (args.IsSuccess && wv.CoreWebView2 != null)
+                {
+                    // This is crucial to ensure true transparency
+                    wv.DefaultBackgroundColor = System.Drawing.Color.Transparent;
+                }
+            };
+
             var htmlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "SubtitleOverlay", htmlFileName);
             wv.NavigationCompleted += (s, e) =>
             {
                 if (isTop) initializedTop = true;
                 else initializedBottom = true;
+
                 Dispatcher.InvokeAsync(() =>
                 {
                     if (isTop) UpdateTopText();
                     else UpdateBottomText();
                 });
             };
+
             wv.Source = new Uri(htmlPath);
         }
 
